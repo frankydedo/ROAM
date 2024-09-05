@@ -7,7 +7,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 class NewTaskDialog extends StatefulWidget {
-  const NewTaskDialog({super.key});
+
+  NewTaskDialog({super.key});
 
   @override
   State<NewTaskDialog> createState() => _NewTaskDialogState();
@@ -125,7 +126,7 @@ class _NewTaskDialogState extends State<NewTaskDialog> with SingleTickerProvider
                                     textAlignVertical: TextAlignVertical.top,
                                     validator: (value) {
                                       if (value == null || value.isEmpty) {
-                                        return "Inserire il json del task";
+                                        return "Inserire task in formato JSON";
                                       }
                                       return null;
                                     },
@@ -187,6 +188,7 @@ class _NewTaskDialogState extends State<NewTaskDialog> with SingleTickerProvider
                         if(_selectedIndex == 0){
                           //TODO
                         }else{
+                          // TODO validate form
                           Navigator.pop(context, json);
                         }
                       }, 

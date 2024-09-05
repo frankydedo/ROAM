@@ -1,5 +1,7 @@
 // ignore_for_file: use_build_context_synchronously, unnecessary_null_comparison
 
+import 'dart:convert';
+
 import 'package:fleet_manager/api/WebSocketService.dart';
 import 'package:fleet_manager/models/Project.dart';
 import 'package:fleet_manager/providers/ColorsProvider.dart';
@@ -13,6 +15,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:http/http.dart' as http;
 
 class FirstPage extends StatefulWidget {
   const FirstPage({super.key});
@@ -26,6 +29,7 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
   late TabController _tabController;
   int _selectedTabIndex = 0;
   String? highlightedTaskRobotName;
+  final String apiServerAddress = "http://localhost:8083";
 
   final webSocketService = WebSocketService('ws://localhost:8000/_internal');
 
@@ -82,6 +86,41 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
     );
   }
 
+  ////////////////////////// METODI  HTTP /////////////////////////
+  
+  Future<List<dynamic>> getRobots() async {
+    try {
+      final response = await http.get(Uri.parse('$apiServerAddress/robot_list'));
+      if (response.statusCode == 200) {
+        dynamic json = jsonDecode(response.body);
+        print(json);
+        return json;
+      } else {
+        throw Exception('Failed to load robots');
+      }
+    } catch (e) {
+      throw Exception('Error: ${e.toString()}');
+    }
+  }
+
+  Future<List<dynamic>> getTasks() async {
+    try {
+      final response = await http.get(Uri.parse('$apiServerAddress/task_list'));
+      if (response.statusCode == 200) {
+        dynamic json = jsonDecode(response.body);
+        print(json);
+        return json;
+      } else {
+        throw Exception('Failed to load tasks');
+      }
+    } catch (e) {
+      throw Exception('Error: ${e.toString()}');
+    }
+  }
+
+
+
+
   @override
   Widget build(BuildContext context) {
     return Consumer2<ColorsProvider, ProjectProvider>(
@@ -96,6 +135,9 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
             backgroundColor: colorsModel.backgroudColor,
             title: Stack(
               children: [
+
+                //logo youbiquo 
+
                 Row(
                   children: [
                     Spacer(),
@@ -105,8 +147,12 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
                     Spacer()
                   ],
                 ),
+
                 Row(
                   children: [
+
+                    //tempo sim
+
                     Icon(CupertinoIcons.clock, color: colorsModel.coloreSecondario, size: 30),
                     SizedBox(width: 8),
                     Text(
@@ -116,12 +162,23 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
                           fontSize: 20,
                           fontWeight: FontWeight.w600),
                     ),
+
+                    SizedBox(width: 24),
+
+                    RealTimeStatusWidget(url: "ws://localhost:8000/_internal"),
+
                     Spacer(),
+
+                    // new task button
+
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: ElevatedButton(
-                          onPressed: () {
-                            showNewTaskDialog(context);
+                          onPressed: () async {
+                            getTasks();
+                            // dynamic task = await showNewTaskDialog(context);
+                            // print(task.toString());
+                            // webSocketService.sendMessage(task.toString());
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: colorsModel.tileBackGroudColor
@@ -134,6 +191,9 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
                                 fontWeight: FontWeight.w700),
                           )),
                     ),
+
+                    // tema button
+
                     ElevatedButton(
                       onPressed: () async{
                         String? tema = await showSelettoreTemaDialog(context);
@@ -195,7 +255,7 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
                       
                           // Vista di task e robot per ogni progetto
                           Container(
-                            height: 1200,
+                            height: 860,
                             child: TabBarView(
                               controller: _tabController,
                               children: projectsModel.projects.map((project) {
@@ -307,12 +367,6 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
                                           }).toList(),
                                         ),
                                       ),
-                                    ),
-
-                                    //websocket widget
-
-                                    RealTimeStatusWidget(
-                                      url: 'ws://localhost:8000/_internal'
                                     ),
                                   ],
                                 );
