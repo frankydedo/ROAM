@@ -11,6 +11,7 @@ import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:provider/provider.dart';
 
 class TaskTile extends StatefulWidget {
+  
   final Project project;
   final Task task;
   bool isHighlighted;

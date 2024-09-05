@@ -1,9 +1,11 @@
 // ignore_for_file: use_build_context_synchronously, unnecessary_null_comparison
 
+import 'package:fleet_manager/api/WebSocketService.dart';
 import 'package:fleet_manager/models/Project.dart';
 import 'package:fleet_manager/providers/ColorsProvider.dart';
 import 'package:fleet_manager/providers/ProjectProvider.dart';
 import 'package:fleet_manager/utils/NewTaskDialog.dart';
+import 'package:fleet_manager/utils/RealTimeStatusWidget.dart';
 import 'package:fleet_manager/utils/RobotTile.dart';
 import 'package:fleet_manager/utils/SelettoreTemaDialog.dart';
 import 'package:fleet_manager/utils/TaskTile.dart';
@@ -24,6 +26,8 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
   late TabController _tabController;
   int _selectedTabIndex = 0;
   String? highlightedTaskRobotName;
+
+  final webSocketService = WebSocketService('ws://localhost:8000/_internal');
 
   @override
   void initState() {
@@ -85,6 +89,9 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
         Project currentProject = projectsModel.projects[_selectedTabIndex];
 
         return Scaffold(
+
+          // app bar
+
           appBar: AppBar(
             backgroundColor: colorsModel.backgroudColor,
             title: Stack(
@@ -129,7 +136,6 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
                     ),
                     ElevatedButton(
                       onPressed: () async{
-                        // Navigator.pushNamed(context, '/settingspage');
                         String? tema = await showSelettoreTemaDialog(context);
                         if(tema == null){
                           return;
@@ -189,7 +195,7 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
                       
                           // Vista di task e robot per ogni progetto
                           Container(
-                            height: 860,
+                            height: 1200,
                             child: TabBarView(
                               controller: _tabController,
                               children: projectsModel.projects.map((project) {
@@ -301,6 +307,12 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
                                           }).toList(),
                                         ),
                                       ),
+                                    ),
+
+                                    //websocket widget
+
+                                    RealTimeStatusWidget(
+                                      url: 'ws://localhost:8000/_internal'
                                     ),
                                   ],
                                 );

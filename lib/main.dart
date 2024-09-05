@@ -1,7 +1,6 @@
 // ignore_for_file: prefer_const_constructors, use_build_context_synchronously
 
 import 'package:fleet_manager/pages/FirstPage.dart';
-import 'package:fleet_manager/pages/SettingsPage.dart';
 import 'package:fleet_manager/providers/ColorsProvider.dart';
 import 'package:fleet_manager/providers/ProjectProvider.dart';
 import 'package:flutter/material.dart';
@@ -82,7 +81,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver{
       home: const FirstPage(),
       routes: {
           '/firstpage': (context) => FirstPage(),
-          '/settingspage': (context) => SettingsPage(),
       },
     );
   }

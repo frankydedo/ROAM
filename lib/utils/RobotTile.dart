@@ -4,7 +4,6 @@ import 'package:fleet_manager/models/Project.dart';
 import 'package:fleet_manager/models/Robot.dart';
 import 'package:fleet_manager/providers/ColorsProvider.dart';
 import 'package:fleet_manager/providers/ProjectProvider.dart';
-import 'package:fleet_manager/utils/ConfermaDialog.dart';
 import 'package:fleet_manager/utils/MySnackBar.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -59,12 +58,6 @@ class _RobotTileState extends State<RobotTile> with SingleTickerProviderStateMix
 
   @override
   Widget build(BuildContext context) {
-    Future<void> showConfermaDialog(BuildContext context, String domanda) {
-      return showDialog(
-        context: context,
-        builder: (context) => ConfermaDialog(domanda: domanda),
-      );
-    }
 
     return Consumer2<ColorsProvider, ProjectProvider>(
       builder: (context, colorsModel, projectsModel, _) {
@@ -184,7 +177,7 @@ class _RobotTileState extends State<RobotTile> with SingleTickerProviderStateMix
                         Text(
                           "Location",
                           style: GoogleFonts.encodeSans(
-                            color: Colors.grey,
+                            color: const Color.fromRGBO(158, 158, 158, 1),
                             fontSize: 20,
                             fontWeight: FontWeight.w700,
                           ),
@@ -213,20 +206,6 @@ class _RobotTileState extends State<RobotTile> with SingleTickerProviderStateMix
                               widget.onHighlightTask();
                             } else {
                               MySnackBar(text: "Questo robot al momento non è occupato.").show(context);
-                              // ScaffoldMessenger.of(context).showSnackBar(
-                              //   SnackBar(
-                              //     shape: RoundedRectangleBorder(
-                              //       borderRadius: BorderRadius.circular(15),
-                              //     ),
-                              //     behavior: SnackBarBehavior.floating,
-                              //     showCloseIcon: true,
-                              //     content: Text(
-                              //       "Questo robot al momento non è occupato.",
-                              //       style: TextStyle(color: Colors.white, fontSize: 18),
-                              //     ),
-                              //     backgroundColor: colorsModel.coloreSecondario,
-                              //   ),
-                              // );
                             }
                           },
                           style: ElevatedButton.styleFrom(
