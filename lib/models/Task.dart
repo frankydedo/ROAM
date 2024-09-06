@@ -1,31 +1,35 @@
-import 'package:fleet_manager/models/Robot.dart';
-
-class Task{
-
+class Task {
   String id;
-  String destination;
-  Robot robot;
-  String type;
+  String category;
+  String? robotName;
+  String? fleetName;
   String state;
-  DateTime date;
-  DateTime start;
-  DateTime end;
-  double completionPerc;
+  String startTime;
+  String? estimatedDuration;
+  String completionPerc = "2";
 
   Task({
     required this.id,
-    required this.destination,
-    required this.robot,
-    required this.type,
+    required this.category,
+    required this.robotName,
+    required this.fleetName,
     required this.state,
-    required this.date,
-    required this.start,
-    required this.end,
-    required this.completionPerc
+    required this.startTime,
+    required this.estimatedDuration,
   });
 
-  void setCompletionPerc (double newCompletionperc){
-    completionPerc = newCompletionperc;
+  String getIdFirstHalf(){
+    List<String> halfs = id.split('-');
+    return halfs[0];
   }
 
+  String getIdSecondHalf(){
+    List<String> halfs = id.split('-');
+    return halfs[1];
+  }
+
+  @override
+  String toString() {
+    return 'Task(id: $id, category: $category, robotName: $robotName, fleetName: $fleetName, state: $state, startTime: $startTime, estimatedDuration: $estimatedDuration, completionPerc: $completionPerc)';
+  }
 }

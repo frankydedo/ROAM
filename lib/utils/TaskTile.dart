@@ -33,15 +33,17 @@ class _TaskTileState extends State<TaskTile> with SingleTickerProviderStateMixin
   Color coloreDaStato(String state) {
     final colorsProvider = Provider.of<ColorsProvider>(context, listen: false);
 
-    switch (state) {
-      case "Active":
+    switch (state.toLowerCase()) {
+      case "active":
+      case "underway":
         return colorsProvider.coloreSecondario;
-      case "Completed":
+      case "completed":
         return Colors.green;
-      case "Queued":
-      case "Suspended":
+      case "queued":
+      case "standby":
         return Colors.yellow.shade700;
-      case "Aborted":
+      case "aborted":
+      case "failed":
         return Colors.red;
       default:
         return colorsProvider.coloreSecondario;
@@ -104,7 +106,7 @@ class _TaskTileState extends State<TaskTile> with SingleTickerProviderStateMixin
                         children: [
                           Spacer(),
                           Text(
-                            "${widget.task.completionPerc.round()}%",
+                            "${double.parse(widget.task.completionPerc).round()}%",
                             style: GoogleFonts.encodeSans(
                               color: colorsModel.coloreSecondario,
                               fontSize: 18,
@@ -117,7 +119,7 @@ class _TaskTileState extends State<TaskTile> with SingleTickerProviderStateMixin
                             child: LinearPercentIndicator(
                               barRadius: Radius.circular(15),
                               lineHeight: 10,
-                              percent: widget.task.completionPerc / 100,
+                              percent: double.parse(widget.task.completionPerc) / 100,
                               progressColor: colorsModel.coloreSecondario,
                               animationDuration: 700,
                               animation: true,
@@ -165,14 +167,26 @@ class _TaskTileState extends State<TaskTile> with SingleTickerProviderStateMixin
                             ),
                           ),
                           Spacer(),
-                          Text(
-                            widget.task.id.toString(),
-                            style: GoogleFonts.encodeSans(
-                              color: colorsModel.textColor,
-                              fontSize: 20,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
+                          Column(
+                            children: [
+                              Text(
+                                widget.task.getIdFirstHalf(),
+                                style: GoogleFonts.encodeSans(
+                                  color: colorsModel.textColor,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              Text(
+                                "-"+widget.task.getIdSecondHalf(),
+                                style: GoogleFonts.encodeSans(
+                                  color: colorsModel.textColor,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              )
+                            ],
+                          )
                         ],
                       ),
                     ),
@@ -190,7 +204,7 @@ class _TaskTileState extends State<TaskTile> with SingleTickerProviderStateMixin
                           ),
                           Spacer(),
                           Text(
-                            widget.task.robot.name,
+                            widget.task.robotName == null ? "Null" : widget.task.robotName!,
                             style: GoogleFonts.encodeSans(
                               color: colorsModel.textColor,
                               fontSize: 20,
@@ -205,7 +219,7 @@ class _TaskTileState extends State<TaskTile> with SingleTickerProviderStateMixin
                       child: Row(
                         children: [
                           Text(
-                            "Type",
+                            "Category",
                             style: GoogleFonts.encodeSans(
                               color: Colors.grey,
                               fontSize: 20,
@@ -214,31 +228,7 @@ class _TaskTileState extends State<TaskTile> with SingleTickerProviderStateMixin
                           ),
                           Spacer(),
                           Text(
-                            widget.task.type,
-                            style: GoogleFonts.encodeSans(
-                              color: colorsModel.textColor,
-                              fontSize: 20,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
-                      child: Row(
-                        children: [
-                          Text(
-                            "Destination",
-                            style: GoogleFonts.encodeSans(
-                              color: Colors.grey,
-                              fontSize: 20,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          Spacer(),
-                          Text(
-                            widget.task.destination,
+                            widget.task.category,
                             style: GoogleFonts.encodeSans(
                               color: colorsModel.textColor,
                               fontSize: 20,
@@ -262,31 +252,14 @@ class _TaskTileState extends State<TaskTile> with SingleTickerProviderStateMixin
                           ),
                           Spacer(),
                           Text(
-                            "${widget.task.start.hour}:${widget.task.start.minute}:${widget.task.start.second}",
+                            "${widget.task.startTime}",
                             style: GoogleFonts.encodeSans(
                               color: colorsModel.textColor,
                               fontSize: 20,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
-                          Spacer(),
-                          Text(
-                            "End",
-                            style: GoogleFonts.encodeSans(
-                              color: Colors.grey,
-                              fontSize: 20,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          Spacer(),
-                          Text(
-                            "${widget.task.end.hour}:${widget.task.end.minute}:${widget.task.end.second}",
-                            style: GoogleFonts.encodeSans(
-                              color: colorsModel.textColor,
-                              fontSize: 20,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
+                          
                         ],
                       ),
                     ),
@@ -304,7 +277,8 @@ class _TaskTileState extends State<TaskTile> with SingleTickerProviderStateMixin
                                   // Azione per eliminare il task
                                   bool conferma = await showConfermaDialog(context, "Sicuro di voler eliminare il task?");
                                   if (conferma) {
-                                    projectsModel.removeTask(widget.project, widget.task);
+                                    // projectsModel.removeTask(widget.project, widget.task);
+                                    //TODO implementa cancellazione task
                                   }
                                 },
                                 style: ElevatedButton.styleFrom(

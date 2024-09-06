@@ -42,14 +42,14 @@ class _RobotTileState extends State<RobotTile> with SingleTickerProviderStateMix
   Color coloreDaStato(String state) {
     final colorsProvider = Provider.of<ColorsProvider>(context, listen: false);
 
-    switch (state) {
-      case "Working":
+    switch (state.toLowerCase()) {
+      case "working":
         return colorsProvider.coloreSecondario;
-      case "Idle":
+      case "idle":
         return Colors.green;
-      case "Charging":
+      case "charging":
         return Colors.yellow.shade700;
-      case "Not Available":
+      case "not available":
         return Colors.red;
       default:
         return colorsProvider.coloreSecondario;
@@ -122,7 +122,7 @@ class _RobotTileState extends State<RobotTile> with SingleTickerProviderStateMix
                           radius: 35,
                           lineWidth: 8,
                           percent: widget.robot.batteryLevel / 100,
-                          progressColor: coloreDaBatteria(widget.robot.batteryLevel),
+                          progressColor: coloreDaBatteria(widget.robot.batteryLevel ),
                           animationDuration: 700,
                           animation: true,
                           animateFromLastPercent: true,

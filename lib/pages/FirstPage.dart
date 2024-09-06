@@ -1,9 +1,11 @@
 // ignore_for_file: use_build_context_synchronously, unnecessary_null_comparison
 
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:fleet_manager/api/WebSocketService.dart';
-import 'package:fleet_manager/models/Project.dart';
+import 'package:fleet_manager/models/Robot.dart';
+import 'package:fleet_manager/models/Task.dart';
 import 'package:fleet_manager/providers/ColorsProvider.dart';
 import 'package:fleet_manager/providers/ProjectProvider.dart';
 import 'package:fleet_manager/utils/NewTaskDialog.dart';
@@ -18,7 +20,9 @@ import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 
 class FirstPage extends StatefulWidget {
-  const FirstPage({super.key});
+  FirstPage({super.key});
+
+  // final int initMillisecondsSinceEpoch = DateTime.now().millisecondsSinceEpoch;
 
   @override
   State<FirstPage> createState() => _FirstPageState();
@@ -30,12 +34,13 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
   int _selectedTabIndex = 0;
   String? highlightedTaskRobotName;
   final String apiServerAddress = "http://localhost:8083";
-
   final webSocketService = WebSocketService('ws://localhost:8000/_internal');
 
   @override
   void initState() {
     super.initState();
+
+    startFetching();
 
     final projectProvider = context.read<ProjectProvider>();
     _tabController = TabController(length: projectProvider.projects.length, vsync: this);
@@ -87,14 +92,29 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
   }
 
   ////////////////////////// METODI  HTTP /////////////////////////
+
+  void startFetching(){
+
+    final projectProvider = Provider.of<ProjectProvider>(context, listen: false);
+
+    Timer.periodic(Duration(seconds: 1), (timer) async {
+
+      // projectProvider.projects.elementAt(_selectedTabIndex).robots = await getRobots();
+      // projectProvider.projects.elementAt(_selectedTabIndex).tasks = await getTasks();
+
+      projectProvider.refreshRobotList(projectProvider.projects.elementAt(_selectedTabIndex), await getRobots());
+      projectProvider.refreshTaskList(projectProvider.projects.elementAt(_selectedTabIndex), await getTasks());
+
+      // getDashboardConfig();
+    });
+  }
   
-  Future<List<dynamic>> getRobots() async {
+  Future<List<Robot>> getRobots() async {
     try {
+      // final response = await http.get(Uri.parse('http://localhost:8000/robot'));
       final response = await http.get(Uri.parse('$apiServerAddress/robot_list'));
       if (response.statusCode == 200) {
-        dynamic json = jsonDecode(response.body);
-        print(json);
-        return json;
+        return parseRobots(response.body);
       } else {
         throw Exception('Failed to load robots');
       }
@@ -103,13 +123,12 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
     }
   }
 
-  Future<List<dynamic>> getTasks() async {
+  Future<List<Task>> getTasks() async {
     try {
-      final response = await http.get(Uri.parse('$apiServerAddress/task_list'));
+      final response = await http.get(Uri.parse('http://localhost:8000/tasks'));
+      // final response = await http.get(Uri.parse('$apiServerAddress/task_list'));
       if (response.statusCode == 200) {
-        dynamic json = jsonDecode(response.body);
-        print(json);
-        return json;
+        return parseTasks(response.body);
       } else {
         throw Exception('Failed to load tasks');
       }
@@ -119,13 +138,72 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
   }
 
 
+  //TODO provare questo metodo
+  Future<List<dynamic>> getDashboardConfig() async {
+    try {
+      // final response = await http.get(Uri.parse('http://localhost:8000/robot'));
+      final response = await http.get(Uri.parse('$apiServerAddress/dashboard_config'));
+      if (response.statusCode == 200) {
+        dynamic json = jsonDecode(response.body);
+        print(json);
+        return json;
+      } else {
+        throw Exception('Failed to load dashboard config');
+      }
+    } catch (e) {
+      throw Exception('Error: ${e.toString()}');
+    }
+  }
+
+  ////////////////////////// METODI DI PARSING /////////////////////////
+
+  // Metodo per convertire JSON in lista di Robot
+
+  List<Robot> parseRobots(String jsonStr) {
+
+    final List<dynamic> jsonList = json.decode(jsonStr);
+
+    return jsonList.map((jsonItem) {
+      return Robot(
+        name: jsonItem['robot_name'],
+        fleet: jsonItem['fleet_name'],
+        status: jsonItem['mode'],
+        location: jsonItem['level_name'],
+        batteryLevel: jsonItem['battery_percent'],
+      );
+    }).toList();
+  }
+
+
+  // Metodo per convertire JSON in lista di oggetti Task
+
+  List<Task> parseTasks(String jsonStr) {
+
+    final List<dynamic> jsonList = json.decode(jsonStr);
+
+    return jsonList.map((jsonItem) {
+      return Task(
+        id: jsonItem['booking']['id'],
+        category: jsonItem['category'],
+        robotName: jsonItem['assigned_to'] == null ? null :  jsonItem['assigned_to']['name'],
+        fleetName: jsonItem['assigned_to'] == null ? null :  jsonItem['assigned_to']['group'],
+        state: jsonItem['status'],
+        startTime: jsonItem['unix_millis_start_time'].toString(),
+        // startTime: DateTime.fromMillisecondsSinceEpoch(jsonItem['unix_millis_start_time'] + widget.initMillisecondsSinceEpoch).toString(),
+        estimatedDuration: jsonItem['estimate_millis'] == null ? null : '${(jsonItem['estimate_millis'] / 1000).toString()}',
+      );
+    }).toList();
+  }
+
+  ///////////////////////////////////////////////////////////////////
 
 
   @override
   Widget build(BuildContext context) {
     return Consumer2<ColorsProvider, ProjectProvider>(
       builder: (context, colorsModel, projectsModel, _) {
-        Project currentProject = projectsModel.projects[_selectedTabIndex];
+
+        // Project currentProject = projectsModel.projects[_selectedTabIndex];
 
         return Scaffold(
 
@@ -156,7 +234,8 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
                     Icon(CupertinoIcons.clock, color: colorsModel.coloreSecondario, size: 30),
                     SizedBox(width: 8),
                     Text(
-                      secToHoursMinsSecs(currentProject.liveTime),
+                      // secToHoursMinsSecs(currentProject.liveTime),
+                      "time",
                       style: GoogleFonts.encodeSans(
                           color: colorsModel.coloreTitoli,
                           fontSize: 20,
@@ -175,10 +254,9 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
                       padding: const EdgeInsets.all(8.0),
                       child: ElevatedButton(
                           onPressed: () async {
-                            getTasks();
-                            // dynamic task = await showNewTaskDialog(context);
-                            // print(task.toString());
-                            // webSocketService.sendMessage(task.toString());
+                            dynamic task = await showNewTaskDialog(context);
+                            print(task.toString());
+                            webSocketService.sendMessage(task.toString());
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: colorsModel.tileBackGroudColor
@@ -246,11 +324,23 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
                                   style: GoogleFonts.encodeSans(
                                     color: colorsModel.textColor,
                                     fontSize: 24,
-                                    fontWeight: project == currentProject ? FontWeight.w700 : FontWeight.w500,
+                                    fontWeight: project.name == projectsModel.projects.elementAt(_selectedTabIndex).name ? FontWeight.w700 : FontWeight.w500,
                                   ),
                                 ),
                               );
                             }).toList(),
+                          //   tabs: [
+                          //     Tab(
+                          //       child: Text(
+                          //         projectsList[0].name,
+                          //         style: GoogleFonts.encodeSans(
+                          //           color: colorsModel.textColor,
+                          //           fontSize: 24,
+                          //           fontWeight: FontWeight.w700,
+                          //         ),
+                          //       ),
+                          //     )
+                          //   ],
                           ),
                       
                           // Vista di task e robot per ogni progetto
@@ -261,7 +351,9 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
                               children: projectsModel.projects.map((project) {
                                 return Column(
                                   children: [
+
                                     // Task
+
                                     Padding(
                                       padding: const EdgeInsets.all(8.0),
                                       child: Center(
@@ -274,7 +366,9 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
                                         ),
                                       ),
                                     ),
-                                    currentProject.tasks!.isEmpty ? 
+
+                                    projectsModel.projects.elementAt(_selectedTabIndex).tasks.isEmpty ? 
+
                                     Padding(
                                       padding: const EdgeInsets.all(8.0),
                                       child: Center(
@@ -301,13 +395,13 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
                                       child: SingleChildScrollView(
                                         scrollDirection: Axis.horizontal,
                                         child: Wrap(
-                                          children: project.tasks!.map((task) {
+                                          children: project.tasks.map((task) {
                                             return Padding(
                                               padding: const EdgeInsets.fromLTRB(14, 14, 0, 12),
                                               child: TaskTile(
-                                                project: currentProject,
+                                                project: projectsModel.projects.elementAt(_selectedTabIndex),
                                                 task: task,
-                                                isHighlighted: highlightedTaskRobotName == task.robot.name, 
+                                                isHighlighted: highlightedTaskRobotName == task.robotName, 
                                               ),
                                             );
                                           }).toList(),
@@ -328,7 +422,7 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
                                         ),
                                       ),
                                     ),
-                                    currentProject.robots!.isEmpty ?
+                                    project.robots.isEmpty ?
                                     Padding(
                                       padding: const EdgeInsets.all(12.0),
                                       child: Center(
@@ -355,11 +449,11 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
                                       child: SingleChildScrollView(
                                         scrollDirection: Axis.horizontal,
                                         child: Wrap(
-                                          children: project.robots!.map((robot) {
+                                          children: project.robots.map((robot) {
                                             return Padding(
                                               padding: const EdgeInsets.fromLTRB(14, 14, 0, 12),
                                               child: RobotTile(
-                                                project: currentProject,
+                                                project: project,
                                                 robot: robot,
                                                 onHighlightTask: () => highlightTask(robot.name),
                                               ),

@@ -78,7 +78,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver{
     return MaterialApp(
       title: 'Fleet Manager',
       debugShowCheckedModeBanner: false,
-      home: const FirstPage(),
+      home: FirstPage(),
       routes: {
           '/firstpage': (context) => FirstPage(),
       },

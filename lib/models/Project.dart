@@ -4,39 +4,53 @@ import 'package:fleet_manager/models/Task.dart';
 class Project {
 
   String name;
-  int liveTime; // duration in seconds
-  List<Robot>? robots;
-  List<Task>? tasks;
+  int liveTime = 0; // duration in seconds
+  List<Robot> robots = [];
+  List<Task> tasks = [];
 
-  Project ({
+  Project({
     required this.name,
-    required this.liveTime,
-    this.robots,
-    this.tasks
-  });
+    this.liveTime = 0, 
+    List<Robot>? robots, 
+    List<Task>? tasks,   
+  })  : robots = robots ?? [], // Assign empty list if null
+        tasks = tasks ?? [];    // Assign empty list if null
 
   void setName (String newName){
     name = newName;
   }
 
   void addRobot (Robot r){
-    robots!.add(r);
+    robots.add(r);
   }
 
   void removeRobot (Robot r){
-    robots!.remove(r);
+    robots.remove(r);
   }
 
   void addTask(Task t){
-    tasks!.add(t);
+    tasks.add(t);
   }
 
   void removeTask (Task t){
-    tasks!.remove(t);
+    tasks.remove(t);
   }
 
   void refreshLiveTime (int sec){
     liveTime = sec;
+  }
+
+  void refreshRobotList(List<Robot> newList){
+    robots
+      ..clear()
+      ..addAll(newList);
+  }
+
+  void refreshTaskList(List<Task> newList){
+    tasks
+      ..clear()
+      ..addAll(newList)
+      ..sort((a, b) => (a.startTime.compareTo(b.startTime)));
   }
 
 
