@@ -1,7 +1,8 @@
-// ignore_for_file: deprecated_member_use
+// ignore_for_file: deprecated_member_use, must_be_immutable
 
 import 'dart:io';
-
+import 'dart:typed_data';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -10,20 +11,25 @@ import 'package:fleet_manager/providers/ColorsProvider.dart';
 import 'package:fleet_manager/providers/ProjectProvider.dart';
 
 class NewTaskDialog extends StatefulWidget {
-  NewTaskDialog({super.key});
+
+  List<String> validTask;
+
+  NewTaskDialog({super.key, required this.validTask});
 
   @override
   State<NewTaskDialog> createState() => _NewTaskDialogState();
 }
 
 class _NewTaskDialogState extends State<NewTaskDialog> with SingleTickerProviderStateMixin {
+
   late TabController _tabController;
   int _selectedIndex = 0;
-  String? json;
   
   // GlobalKey for the Form
-  final _formKey = GlobalKey<FormState>();
+  final _jsonFormKey = GlobalKey<FormState>();
+  final _formFormKey = GlobalKey<FormState>();
   final TextEditingController _jsonController = TextEditingController();
+  final TextEditingController _minutiController = TextEditingController();
 
   @override
   void initState() {
@@ -44,8 +50,7 @@ class _NewTaskDialogState extends State<NewTaskDialog> with SingleTickerProvider
     super.dispose();
   }
 
-  Future<void> _pickFile() async {
-    print("File picker button pressed");
+  void pickFile() async {
     try {
       FilePickerResult? result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
@@ -53,15 +58,26 @@ class _NewTaskDialogState extends State<NewTaskDialog> with SingleTickerProvider
       );
 
       if (result != null) {
-        File file = File(result.files.single.path!);
-        String fileContent = await file.readAsString();
-        setState(() {
-          _jsonController.text = fileContent;
-          json = fileContent;
-        });
-        print("File content loaded successfully");
+        PlatformFile pickedFile = result.files.first;
+
+        if (kIsWeb) {
+          // Su Web, usa bytes per accedere al contenuto del file
+          Uint8List? fileBytes = pickedFile.bytes;
+          if (fileBytes != null) {
+            String fileContent = String.fromCharCodes(fileBytes);
+            _jsonController.text = fileContent;
+          }
+        } else {
+          // Su Desktop/Mobile, usa il percorso del file
+          String? filePath = pickedFile.path;
+          if (filePath != null) {
+            File file = File(filePath);
+            String fileContent = await file.readAsString();
+            _jsonController.text = fileContent;
+          }
+        }
       } else {
-        print("No file selected");
+        print("No file selected.");
       }
     } catch (e) {
       print("Error picking file: $e");
@@ -70,8 +86,12 @@ class _NewTaskDialogState extends State<NewTaskDialog> with SingleTickerProvider
 
   @override
   Widget build(BuildContext context) {
+
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
+
+    String? _selectedTask;
+    String? _selectedPriority;
 
     return Consumer2<ColorsProvider, ProjectProvider>(
       builder: (context, colorsModel, projectsModel, _) {
@@ -134,24 +154,157 @@ class _NewTaskDialogState extends State<NewTaskDialog> with SingleTickerProvider
                             controller: _tabController,
                             children: [
                               // vista per form
-                              Center(
-                                child: Text("Selected: Form"),
+                              Form(
+                                key: _formFormKey,
+                                child: Column(
+                                  children: [
+                                
+                                    SizedBox(
+                                      width: screenWidth * 0.5,
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: DropdownButtonFormField<String>(
+                                          validator: (value) {
+                                            if(value == null){
+                                              return "Sceglere il task da eseguire";
+                                            }
+                                            return null;
+                                          },
+                                          value: _selectedTask,
+                                          style: TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.normal,
+                                          ),
+                                          decoration: InputDecoration(
+                                            hintText: "seleziona un task",
+                                            hintStyle: TextStyle(color: Colors.grey),
+                                            border: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(15),
+                                            ),
+                                            focusedBorder: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(15),
+                                              borderSide: BorderSide(color: colorsModel.coloreSecondario),
+                                            ),
+                                          ),
+                                          onChanged: (String? newValue) {
+                                            setState(() {
+                                              _selectedTask = newValue;
+                                            });
+                                          },
+                                          items: widget.validTask.map((String task) {
+                                            return DropdownMenuItem<String>(
+                                              value: task,
+                                              child: Text(task),
+                                            );
+                                          }).toList(),
+                                        ),
+                                      ),
+                                    ),
+                                
+                                    SizedBox(
+                                      width: screenWidth * 0.5,
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: TextFormField(
+                                          keyboardType: TextInputType.number,
+                                          controller: _minutiController,
+                                          cursorColor: colorsModel.coloreSecondario,
+                                          textInputAction: TextInputAction.done,
+                                          textAlign: TextAlign.start,
+                                          textAlignVertical: TextAlignVertical.top,
+                                          validator: (value) {
+                                            //TODO
+                                            return null;
+                                          },
+                                          style: TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.normal,
+                                          ),
+                                          decoration: InputDecoration(
+                                            hintText: "minuti da ora",
+                                            hintStyle: TextStyle(color: Colors.grey),
+                                            border: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(15),
+                                            ),
+                                            focusedBorder: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(15),
+                                              borderSide: BorderSide(color: colorsModel.coloreSecondario),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+
+                                    SizedBox(
+                                      width: screenWidth * 0.5,
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: DropdownButtonFormField<String>(
+                                          validator: (value) {
+                                            if(value == null){
+                                              return "Sceglere la priorità";
+                                            }
+                                            return null;
+                                          },
+                                          value: _selectedPriority,
+                                          style: TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.normal,
+                                          ),
+                                          decoration: InputDecoration(
+                                            hintText: "seleziona una priorità",
+                                            hintStyle: TextStyle(color: Colors.grey),
+                                            border: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(15),
+                                            ),
+                                            focusedBorder: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(15),
+                                              borderSide: BorderSide(color: colorsModel.coloreSecondario),
+                                            ),
+                                          ),
+                                          onChanged: (String? newValue) {
+                                            setState(() {
+                                              _selectedTask = newValue;
+                                            });
+                                          },
+                                          items: [
+                                            DropdownMenuItem<String>(
+                                              value: "High",
+                                              child: Text("High")
+                                            ),
+                                            DropdownMenuItem(
+                                              value: "Low",
+                                              child: Text("Low")
+                                            ),
+
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                
+                                //TODO: temrinare il form
+                                
+                                
+                                  ],
+                                ),
                               ),
 
                               // vista per json
                               Form(
-                                key: _formKey,  // Associating the form key
+                                key: _jsonFormKey,
                                 child: Column(
                                   children: [
                                     SizedBox(
-                                      height: 200,
+                                      height: 300,
                                       child: Padding(
                                         padding: const EdgeInsets.all(8.0),
                                         child: TextFormField(
                                           controller: _jsonController,
                                           cursorColor: colorsModel.coloreSecondario,
                                           textInputAction: TextInputAction.done,
-                                          onFieldSubmitted: (_) {},
                                           textAlign: TextAlign.start,
                                           textAlignVertical: TextAlignVertical.top,
                                           validator: (value) {
@@ -160,33 +313,29 @@ class _NewTaskDialogState extends State<NewTaskDialog> with SingleTickerProvider
                                             }
                                             return null;
                                           },
-                                          onChanged: (value) {
-                                            json = value;
-                                          },
                                           style: TextStyle(
-                                            color: colorsModel.textColor,
+                                            color: Colors.black,
                                             fontSize: 14,
                                             fontWeight: FontWeight.normal,
                                           ),
                                           decoration: InputDecoration(
                                             hintText: "JSON",
-                                            hoverColor: colorsModel.coloreSecondario,
                                             hintStyle: TextStyle(color: Colors.grey),
                                             border: OutlineInputBorder(
                                               borderRadius: BorderRadius.circular(15),
                                             ),
                                             focusedBorder: OutlineInputBorder(
                                               borderRadius: BorderRadius.circular(15),
-                                              borderSide: BorderSide(
-                                                color: colorsModel.coloreSecondario,
-                                              ),
+                                              borderSide: BorderSide(color: colorsModel.coloreSecondario),
                                             ),
                                           ),
+                                          minLines: 10,
+                                          maxLines: null,
                                         ),
                                       ),
                                     ),
                                     ElevatedButton.icon(
-                                      onPressed: _pickFile,
+                                      onPressed: pickFile,
                                       icon: Icon(Icons.attach_file),
                                       label: Text("Scegli file"),
                                       style: ElevatedButton.styleFrom(
@@ -233,8 +382,8 @@ class _NewTaskDialogState extends State<NewTaskDialog> with SingleTickerProvider
                           if (_selectedIndex == 0) {
                             // TODO: Gestione della tab "Form"
                           } else {
-                            if (_formKey.currentState?.validate() ?? false) {
-                              Navigator.pop(context, json);
+                            if (_jsonFormKey.currentState?.validate() ?? false) {
+                              Navigator.pop(context, _jsonController.text);
                             }
                           }
                         },

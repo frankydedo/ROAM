@@ -38,6 +38,7 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
   final String apiServerAddress = "http://localhost:8083";
   final webSocketService = WebSocketService('ws://localhost:8000/_internal');
   int? millisecondsSinceStart = null;
+  late List<String> validTask;
 
   @override
   void initState() {
@@ -107,7 +108,7 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
   Future showNewTaskDialog(BuildContext context) {
     return showDialog(
       context: context,
-      builder: (context) => NewTaskDialog(),
+      builder: (context) => NewTaskDialog(validTask: validTask),
     );
   }
 
@@ -193,6 +194,7 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
       
       if (response.statusCode == 200) {
         Map<String, dynamic> jsonMap = json.decode(response.body);
+        validTask = List<String>.from(jsonMap['valid_task']);
         return jsonMap['world_name'] as String;
       } else {
         throw Exception('Failed to load dashboard config');
@@ -387,30 +389,6 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
                               }
                             }
                           },
-
-                          // onPressed: () async {
-                          //   Map<String, dynamic> task1 = {"task_type":"Delivery",
-                          //   "start_time":0,
-                          //   "priority":0,
-                          //   "description":{"dropoff_ingestor":"coke_ingestor","dropoff_place_name":"hardware_2","pickup_dispenser":"coke_dispenser","pickup_place_name":"pantry"}
-                          //   };
-                          //   try {
-                          //     final response = await submitRequest(task1);
-                          //     // Gestione della risposta
-                          //     if (response != null) {
-                          //       if (response['task_id'] != null && response['task_id'] != "") {
-                          //         MySnackBar(text: "Request submitted successfully! Task ID: ${response["task_id"]}").show(context);
-                          //       } else {
-                          //         MySnackBar(text: "Delivery Request failed! ${response["error_msg"]}").show(context);
-                          //       }
-                          //     } else {
-                          //       MySnackBar(text: 'No response received from server').show(context);
-                          //     }
-                          //   } catch (e) {
-                          //     print('An error occurred: $e');
-                          //   }
-                          // },
-                          
                           style: ElevatedButton.styleFrom(
                             backgroundColor: colorsModel.tileBackGroudColor
                           ),
