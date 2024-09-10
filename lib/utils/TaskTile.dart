@@ -1,14 +1,19 @@
 // ignore_for_file: must_be_immutable, prefer_const_constructors, prefer_const_constructors_in_immutables
 
+import 'dart:convert';
+
 import 'package:fleet_manager/models/Project.dart';
 import 'package:fleet_manager/models/Task.dart';
 import 'package:fleet_manager/providers/ColorsProvider.dart';
 import 'package:fleet_manager/providers/ProjectProvider.dart';
 import 'package:fleet_manager/utils/ConfermaDialog.dart';
+import 'package:fleet_manager/utils/MySnackBar.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:provider/provider.dart';
+import 'package:http/http.dart' as http;
+
 
 class TaskTile extends StatefulWidget {
   
@@ -28,13 +33,14 @@ class TaskTile extends StatefulWidget {
 }
 
 class _TaskTileState extends State<TaskTile> with SingleTickerProviderStateMixin {
+
+  final String apiServerAddress = "http://localhost:8083";
   bool isExpanded = false;
 
   Color coloreDaStato(String state) {
     final colorsProvider = Provider.of<ColorsProvider>(context, listen: false);
 
     switch (state.toLowerCase()) {
-      case "active":
       case "underway":
         return colorsProvider.coloreSecondario;
       case "completed":
@@ -42,7 +48,7 @@ class _TaskTileState extends State<TaskTile> with SingleTickerProviderStateMixin
       case "queued":
       case "standby":
         return Colors.yellow.shade700;
-      case "aborted":
+      case "canceled":
       case "failed":
         return Colors.red;
       default:
@@ -55,6 +61,21 @@ class _TaskTileState extends State<TaskTile> with SingleTickerProviderStateMixin
       context: context,
       builder: (context) => ConfermaDialog(domanda: domanda,),
     );
+  }
+
+  String millisecToHoursMinsSecs(int milliseconds) {
+
+    double seconds = milliseconds / 1000;
+
+    int sec = seconds.round() % 60;
+    seconds -= sec;
+
+    int mins = (seconds / 60).round() % 60;
+    seconds -= mins * 60;
+
+    int hours = (seconds / 3600).round();
+
+    return "$hours : $mins : $sec";
   }
 
   @override
@@ -73,7 +94,7 @@ class _TaskTileState extends State<TaskTile> with SingleTickerProviderStateMixin
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(17),
               border: Border.all(
-                color: (widget.isHighlighted && widget.task.state == "Active") ? colorsModel.coloreSecondario : Colors.transparent,
+                color: (widget.isHighlighted && widget.task.state.toLowerCase() == "underway") ? colorsModel.coloreSecondario : Colors.transparent,
                 width: 2.0,
               ),
             ),
@@ -84,7 +105,7 @@ class _TaskTileState extends State<TaskTile> with SingleTickerProviderStateMixin
                 padding: EdgeInsets.all(12),
                 width: 300,
                 decoration: BoxDecoration(
-                  color: (widget.isHighlighted && widget.task.state == "Active") ? colorsModel.coloreHighlight : colorsModel.tileBackGroudColor,
+                  color: (widget.isHighlighted && widget.task.state.toLowerCase() == "underway") ? colorsModel.coloreHighlight : colorsModel.tileBackGroudColor,
                   // color: colorsModel.tileBackGroudColor,
                   borderRadius: BorderRadius.circular(15),
                   boxShadow: [
@@ -167,25 +188,13 @@ class _TaskTileState extends State<TaskTile> with SingleTickerProviderStateMixin
                             ),
                           ),
                           Spacer(),
-                          Column(
-                            children: [
-                              Text(
-                                widget.task.getIdFirstHalf(),
-                                style: GoogleFonts.encodeSans(
-                                  color: colorsModel.textColor,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              Text(
-                                "-"+widget.task.getIdSecondHalf(),
-                                style: GoogleFonts.encodeSans(
-                                  color: colorsModel.textColor,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              )
-                            ],
+                          Text(
+                            widget.task.getIdSecondHalf(),
+                            style: GoogleFonts.encodeSans(
+                              color: colorsModel.textColor,
+                              fontSize: 20,
+                              fontWeight: FontWeight.w500,
+                            ),
                           )
                         ],
                       ),
@@ -252,7 +261,7 @@ class _TaskTileState extends State<TaskTile> with SingleTickerProviderStateMixin
                           ),
                           Spacer(),
                           Text(
-                            "${widget.task.startTime}",
+                            millisecToHoursMinsSecs(int.parse(widget.task.startTime)),
                             style: GoogleFonts.encodeSans(
                               color: colorsModel.textColor,
                               fontSize: 20,
@@ -274,20 +283,48 @@ class _TaskTileState extends State<TaskTile> with SingleTickerProviderStateMixin
                             Center(
                               child: ElevatedButton(
                                 onPressed: () async {
-                                  // Azione per eliminare il task
-                                  bool conferma = await showConfermaDialog(context, "Sicuro di voler eliminare il task?");
-                                  if (conferma) {
-                                    // projectsModel.removeTask(widget.project, widget.task);
-                                    //TODO implementa cancellazione task
+                                  
+                                  //se il task è in corso
+                                  if(widget.task.state.toLowerCase() == "underway" || widget.task.state.toLowerCase() == "standby" || widget.task.state.toLowerCase() == "queued"){
+                                    // Azione per eliminare il task
+                                    bool conferma = await showConfermaDialog(context, "Sicuro di voler eliminare il planning?");
+                                    if (conferma) {
+                                      try {
+                                        final response = await http.post(
+                                          // Uri.parse('$apiServerAddress/cancel_task'),
+                                          Uri.parse('http://localhost:8000/tasks/cancel_task'),
+                                          headers: {
+                                            "Content-Type": "application/json; charset=UTF-8",
+                                          },
+                                          body: jsonEncode({"type":"cancel_task_request","task_id": widget.task.id.toString()}),
+                                        );
+                                        if (response.statusCode == 200) {
+                                          MySnackBar(text: "Planning cancelled", isError: false).show(context);
+                                        } else {
+                                          throw Exception('Failed to cancel task: '+response.statusCode.toString());
+                                        }
+                                      } catch (err) {
+                                        print(err);
+                                      }
+                                    }
+                                  }else{
+                                    // se non è in corso
+                                    MySnackBar(text: "Questo planning non è in corso", isError: false).show(context);
                                   }
                                 },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: colorsModel.tileBackGroudColor,
                                 ),
                                 child: Text(
-                                  "Elimina",
+                                  "Interrompi",
                                   style: GoogleFonts.encodeSans(
-                                    color: Colors.red,
+                                    color: 
+                                      widget.task.state.toLowerCase() == "underway" ||
+                                      widget.task.state.toLowerCase() == "standby" ||
+                                      widget.task.state.toLowerCase() == "queued" ?
+                                      Colors.red
+                                      :
+                                      Colors.red.withOpacity(.5),
                                     fontSize: 20,
                                     fontWeight: FontWeight.w500,
                                   ),

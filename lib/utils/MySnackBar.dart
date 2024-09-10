@@ -7,8 +7,9 @@ import 'package:fleet_manager/providers/ColorsProvider.dart';
 class MySnackBar extends StatelessWidget {
 
   final String text;
+  bool isError;
 
-  const MySnackBar({super.key, required this.text});
+  MySnackBar({super.key, required this.text, required this.isError});
 
   void show(BuildContext context) {
     final colorsModel = Provider.of<ColorsProvider>(context, listen: false);
@@ -22,7 +23,8 @@ class MySnackBar extends StatelessWidget {
           text,
           style: TextStyle(color: Colors.white, fontSize: 18),
         ),
-        backgroundColor: colorsModel.coloreSecondario,
+        backgroundColor: isError ? Colors.red : colorsModel.coloreSecondario,
+        // backgroundColor:Colors.red,
       ),
     );
   }

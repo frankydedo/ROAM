@@ -6,7 +6,7 @@ class Task {
   String state;
   String startTime;
   String? estimatedDuration;
-  String completionPerc = "2";
+  String completionPerc;
 
   Task({
     required this.id,
@@ -16,6 +16,7 @@ class Task {
     required this.state,
     required this.startTime,
     required this.estimatedDuration,
+    required this.completionPerc
   });
 
   String getIdFirstHalf(){

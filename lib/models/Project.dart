@@ -5,16 +5,24 @@ class Project {
 
   String name;
   int liveTime = 0; // duration in seconds
-  List<Robot> robots = [];
-  List<Task> tasks = [];
+  List<Robot> _robots = [];
+  List<Task> _tasks = [];
 
   Project({
     required this.name,
     this.liveTime = 0, 
     List<Robot>? robots, 
     List<Task>? tasks,   
-  })  : robots = robots ?? [], // Assign empty list if null
-        tasks = tasks ?? [];    // Assign empty list if null
+  })  : _robots = robots ?? [],
+        _tasks = tasks ?? [];
+
+  List <Robot> get robots => _robots;
+
+  List <Task> get tasks{
+    List<Task> tasks = _tasks;
+    tasks.sort((a,b) => int.parse(b.startTime).compareTo(int.parse(a.startTime)));
+    return tasks;
+  }
 
   void setName (String newName){
     name = newName;
@@ -49,8 +57,8 @@ class Project {
   void refreshTaskList(List<Task> newList){
     tasks
       ..clear()
-      ..addAll(newList)
-      ..sort((a, b) => (a.startTime.compareTo(b.startTime)));
+      ..addAll(newList);
+      // ..sort((a, b) => (a.startTime.compareTo(b.startTime)));
   }
 
 

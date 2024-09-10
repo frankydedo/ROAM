@@ -202,10 +202,10 @@ class _RobotTileState extends State<RobotTile> with SingleTickerProviderStateMix
                       child: Center(
                         child: ElevatedButton(
                           onPressed: () {
-                            if (widget.robot.status == "Working") {
+                            if (widget.robot.status.toLowerCase() == "working") {
                               widget.onHighlightTask();
                             } else {
-                              MySnackBar(text: "Questo robot al momento non è occupato.").show(context);
+                              MySnackBar(text: "Questo robot al momento non è occupato.", isError: false).show(context);
                             }
                           },
                           style: ElevatedButton.styleFrom(
@@ -214,7 +214,7 @@ class _RobotTileState extends State<RobotTile> with SingleTickerProviderStateMix
                           child: Text(
                             "Mostra task corrente",
                             style: GoogleFonts.encodeSans(
-                              color: widget.robot.status == "Working"
+                              color: widget.robot.status.toLowerCase() == "working"
                                   ? colorsModel.coloreSecondario
                                   : colorsModel.coloreSecondario.withOpacity(.5),
                               fontSize: 20,

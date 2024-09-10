@@ -2,12 +2,14 @@
 
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:fleet_manager/api/WebSocketService.dart';
 import 'package:fleet_manager/models/Robot.dart';
 import 'package:fleet_manager/models/Task.dart';
 import 'package:fleet_manager/providers/ColorsProvider.dart';
 import 'package:fleet_manager/providers/ProjectProvider.dart';
+import 'package:fleet_manager/utils/MySnackBar.dart';
 import 'package:fleet_manager/utils/NewTaskDialog.dart';
 import 'package:fleet_manager/utils/RealTimeStatusWidget.dart';
 import 'package:fleet_manager/utils/RobotTile.dart';
@@ -35,6 +37,7 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
   String? highlightedTaskRobotName;
   final String apiServerAddress = "http://localhost:8083";
   final webSocketService = WebSocketService('ws://localhost:8000/_internal');
+  int? millisecondsSinceStart = null;
 
   @override
   void initState() {
@@ -44,6 +47,7 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
 
     final projectProvider = context.read<ProjectProvider>();
     _tabController = TabController(length: projectProvider.projects.length, vsync: this);
+
 
     _tabController.addListener(() {
       setState(() {
@@ -76,6 +80,22 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
     return "$hours : $mins : $sec";
   }
 
+  String millisecToHoursMinsSecs(int milliseconds) {
+
+    double seconds = milliseconds / 1000;
+
+    int sec = seconds.round() % 60;
+    seconds -= sec;
+
+    int mins = (seconds / 60).round() % 60;
+    seconds -= mins * 60;
+
+    int hours = (seconds / 3600).round();
+
+    return "$hours : $mins : $sec";
+  }
+
+
   Future showSelettoreTemaDialog(BuildContext context) {
     final colorsModel = Provider.of<ColorsProvider>(context, listen: false);
     return showDialog(
@@ -99,13 +119,42 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
 
     Timer.periodic(Duration(seconds: 1), (timer) async {
 
-      // projectProvider.projects.elementAt(_selectedTabIndex).robots = await getRobots();
-      // projectProvider.projects.elementAt(_selectedTabIndex).tasks = await getTasks();
-
       projectProvider.refreshRobotList(projectProvider.projects.elementAt(_selectedTabIndex), await getRobots());
       projectProvider.refreshTaskList(projectProvider.projects.elementAt(_selectedTabIndex), await getTasks());
+      projectProvider.refreshProjectName(projectProvider.projects.elementAt(_selectedTabIndex), await getProjectName());
 
-      // getDashboardConfig();
+      if (millisecondsSinceStart == null){
+        if(projectProvider.projects.elementAt(_selectedTabIndex).tasks.isEmpty){
+          millisecondsSinceStart = 0;
+        }else{
+          List<int> starts = [];
+          for(Task t in projectProvider.projects.elementAt(_selectedTabIndex).tasks){
+            if(t.state.toLowerCase() != "queued"){
+              starts.add(int.parse(t.startTime));
+            }
+          }
+          if (starts.isNotEmpty){
+            starts.sort((a,b) => b.compareTo(a));
+            millisecondsSinceStart = starts[0];
+          }
+        }
+      }else{
+        if(projectProvider.projects.elementAt(_selectedTabIndex).tasks.isEmpty){
+          millisecondsSinceStart = 0;
+        }else{
+          millisecondsSinceStart = millisecondsSinceStart! + 1000;
+          List<int> starts = [];
+          for(Task t in projectProvider.projects.elementAt(_selectedTabIndex).tasks){
+            if(t.state.toLowerCase() != "queued"){
+              starts.add(int.parse(t.startTime));
+            }
+          }
+          starts.sort((a,b) => b.compareTo(a));
+          if(starts[0]>millisecondsSinceStart!){
+            millisecondsSinceStart = starts[0];
+          }
+        }
+      }
     });
   }
   
@@ -138,15 +187,13 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
   }
 
 
-  //TODO provare questo metodo
-  Future<List<dynamic>> getDashboardConfig() async {
+  Future<String> getProjectName() async {
     try {
-      // final response = await http.get(Uri.parse('http://localhost:8000/robot'));
       final response = await http.get(Uri.parse('$apiServerAddress/dashboard_config'));
+      
       if (response.statusCode == 200) {
-        dynamic json = jsonDecode(response.body);
-        print(json);
-        return json;
+        Map<String, dynamic> jsonMap = json.decode(response.body);
+        return jsonMap['world_name'] as String;
       } else {
         throw Exception('Failed to load dashboard config');
       }
@@ -154,6 +201,30 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
       throw Exception('Error: ${e.toString()}');
     }
   }
+
+
+  Future<dynamic> submitRequest(Map<String, dynamic> request) async {
+    final url = Uri.parse('$apiServerAddress/submit_task');
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(request),
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        throw Exception('Failed to submit task: ${response.statusCode}');
+      }
+    } catch (e) {
+      return e;
+    }
+  }
+
 
   ////////////////////////// METODI DI PARSING /////////////////////////
 
@@ -167,11 +238,23 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
       return Robot(
         name: jsonItem['robot_name'],
         fleet: jsonItem['fleet_name'],
-        status: jsonItem['mode'],
+        status: jsonItem['fleet_name'] == "Charging-1" ? "Charging" : defineStatus(jsonItem['robot_name']),
         location: jsonItem['level_name'],
         batteryLevel: jsonItem['battery_percent'],
       );
     }).toList();
+  }
+
+  String defineStatus (String robotName){
+
+    final projectProvider = Provider.of<ProjectProvider>(context, listen: false);
+
+    for (Task t in projectProvider.getProjectTask(projectProvider.projects.elementAt(_selectedTabIndex))){
+      if (t.robotName == robotName && t.state.toLowerCase() != "completed" && t.state.toLowerCase() != "failed" && t.state.toLowerCase() != "canceled"){
+        return "Working";
+      }
+    }
+    return "Idle";
   }
 
 
@@ -189,10 +272,34 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
         fleetName: jsonItem['assigned_to'] == null ? null :  jsonItem['assigned_to']['group'],
         state: jsonItem['status'],
         startTime: jsonItem['unix_millis_start_time'].toString(),
-        // startTime: DateTime.fromMillisecondsSinceEpoch(jsonItem['unix_millis_start_time'] + widget.initMillisecondsSinceEpoch).toString(),
-        estimatedDuration: jsonItem['estimate_millis'] == null ? null : '${(jsonItem['estimate_millis'] / 1000).toString()}',
+        // startTime: millisecToHoursMinsSecs(jsonItem['unix_millis_start_time']).toString(),
+        estimatedDuration: jsonItem['estimate_millis'] == null ? null : '${(jsonItem['estimate_millis']).toString()}',
+        completionPerc: defineCompletionPerc(
+          jsonItem['status'],
+          jsonItem['unix_millis_start_time'].toString(),
+          jsonItem['estimate_millis'] == null ? "" : '${(jsonItem['estimate_millis']).toString()}',
+        )
       );
     }).toList();
+  }
+
+  String defineCompletionPerc(String status, String startTime, String estDuration){
+    if (status.toLowerCase() == "completed"){
+      return "100";
+    }if (status.toLowerCase() == "canceled"){
+      return "0";
+    }else{
+      if (estDuration.toLowerCase() == ""){
+        return "0";
+      }else{
+        if (millisecondsSinceStart == null) {
+          return "10";
+        }else{
+          double perc = max(0, min(99, (millisecondsSinceStart! - int.parse(startTime)) / int.parse(estDuration) * 20));
+          return perc.round().toString();
+        }
+      }
+    }
   }
 
   ///////////////////////////////////////////////////////////////////
@@ -229,22 +336,24 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
                 Row(
                   children: [
 
+                    RealTimeStatusWidget(url: "ws://localhost:8000/_internal"),
+
+                    SizedBox(width: 24),
+
                     //tempo sim
 
                     Icon(CupertinoIcons.clock, color: colorsModel.coloreSecondario, size: 30),
                     SizedBox(width: 8),
                     Text(
-                      // secToHoursMinsSecs(currentProject.liveTime),
-                      "time",
+                      millisecondsSinceStart != null ?
+                      secToHoursMinsSecs((millisecondsSinceStart! / 1000).round())
+                      :
+                      DateTime.now().hour.toString()+" : "+ DateTime.now().minute.toString()+" : "+ DateTime.now().second.toString(),
                       style: GoogleFonts.encodeSans(
                           color: colorsModel.coloreTitoli,
                           fontSize: 20,
                           fontWeight: FontWeight.w600),
                     ),
-
-                    SizedBox(width: 24),
-
-                    RealTimeStatusWidget(url: "ws://localhost:8000/_internal"),
 
                     Spacer(),
 
@@ -253,16 +362,60 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: ElevatedButton(
+
                           onPressed: () async {
-                            dynamic task = await showNewTaskDialog(context);
-                            print(task.toString());
-                            webSocketService.sendMessage(task.toString());
+                            dynamic taskJson = await showNewTaskDialog(context);
+
+                            if (taskJson != null){
+                              try {
+                                Map<String, dynamic> task = jsonDecode(taskJson);
+                                final response = await submitRequest(task);
+
+                                // Gestione della risposta
+                                if (response != null) {
+                                  if (response['task_id'] != null && response['task_id'] != "") {
+                                    MySnackBar(text: "Request submitted successfully! Task ID: ${response["task_id"]}", isError: false).show(context);
+                                  } else {
+                                    MySnackBar(text: "Delivery Request failed! ${response["error_msg"]}", isError: true).show(context);
+                                  }
+                                } else {
+                                  MySnackBar(text: 'No response received from server', isError: true,).show(context);
+                                }
+                              } catch (e) {
+                                print('An error occurred: $e');
+                                MySnackBar(text: "Delivery Request failed!", isError: true).show(context);
+                              }
+                            }
                           },
+
+                          // onPressed: () async {
+                          //   Map<String, dynamic> task1 = {"task_type":"Delivery",
+                          //   "start_time":0,
+                          //   "priority":0,
+                          //   "description":{"dropoff_ingestor":"coke_ingestor","dropoff_place_name":"hardware_2","pickup_dispenser":"coke_dispenser","pickup_place_name":"pantry"}
+                          //   };
+                          //   try {
+                          //     final response = await submitRequest(task1);
+                          //     // Gestione della risposta
+                          //     if (response != null) {
+                          //       if (response['task_id'] != null && response['task_id'] != "") {
+                          //         MySnackBar(text: "Request submitted successfully! Task ID: ${response["task_id"]}").show(context);
+                          //       } else {
+                          //         MySnackBar(text: "Delivery Request failed! ${response["error_msg"]}").show(context);
+                          //       }
+                          //     } else {
+                          //       MySnackBar(text: 'No response received from server').show(context);
+                          //     }
+                          //   } catch (e) {
+                          //     print('An error occurred: $e');
+                          //   }
+                          // },
+                          
                           style: ElevatedButton.styleFrom(
                             backgroundColor: colorsModel.tileBackGroudColor
                           ),
                           child: Text(
-                            "New Task +",
+                            "New Planning +",
                             style: GoogleFonts.encodeSans(
                                 color: colorsModel.coloreSecondario,
                                 fontSize: 20,
@@ -329,18 +482,6 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
                                 ),
                               );
                             }).toList(),
-                          //   tabs: [
-                          //     Tab(
-                          //       child: Text(
-                          //         projectsList[0].name,
-                          //         style: GoogleFonts.encodeSans(
-                          //           color: colorsModel.textColor,
-                          //           fontSize: 24,
-                          //           fontWeight: FontWeight.w700,
-                          //         ),
-                          //       ),
-                          //     )
-                          //   ],
                           ),
                       
                           // Vista di task e robot per ogni progetto
@@ -395,7 +536,7 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
                                       child: SingleChildScrollView(
                                         scrollDirection: Axis.horizontal,
                                         child: Wrap(
-                                          children: project.tasks.map((task) {
+                                          children: projectsModel.getProjectTask(projectsModel.projects.elementAt(_selectedTabIndex)).map((task) {
                                             return Padding(
                                               padding: const EdgeInsets.fromLTRB(14, 14, 0, 12),
                                               child: TaskTile(

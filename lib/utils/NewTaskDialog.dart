@@ -1,13 +1,15 @@
 // ignore_for_file: deprecated_member_use
 
-import 'package:fleet_manager/providers/ColorsProvider.dart';
-import 'package:fleet_manager/providers/ProjectProvider.dart';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:fleet_manager/providers/ColorsProvider.dart';
+import 'package:fleet_manager/providers/ProjectProvider.dart';
 
 class NewTaskDialog extends StatefulWidget {
-
   NewTaskDialog({super.key});
 
   @override
@@ -15,11 +17,13 @@ class NewTaskDialog extends StatefulWidget {
 }
 
 class _NewTaskDialogState extends State<NewTaskDialog> with SingleTickerProviderStateMixin {
-
   late TabController _tabController;
   int _selectedIndex = 0;
-
   String? json;
+  
+  // GlobalKey for the Form
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController _jsonController = TextEditingController();
 
   @override
   void initState() {
@@ -36,12 +40,36 @@ class _NewTaskDialogState extends State<NewTaskDialog> with SingleTickerProvider
   @override
   void dispose() {
     _tabController.dispose();
+    _jsonController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickFile() async {
+    print("File picker button pressed");
+    try {
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['json', 'txt'],
+      );
+
+      if (result != null) {
+        File file = File(result.files.single.path!);
+        String fileContent = await file.readAsString();
+        setState(() {
+          _jsonController.text = fileContent;
+          json = fileContent;
+        });
+        print("File content loaded successfully");
+      } else {
+        print("No file selected");
+      }
+    } catch (e) {
+      print("Error picking file: $e");
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
 
@@ -60,7 +88,7 @@ class _NewTaskDialogState extends State<NewTaskDialog> with SingleTickerProvider
                 children: [
                   Center(
                     child: Text(
-                      "Crea un nuovo task",
+                      "Crea un nuovo planning",
                       style: GoogleFonts.encodeSans(
                         color: colorsModel.coloreTitoli,
                         fontSize: 30,
@@ -105,52 +133,72 @@ class _NewTaskDialogState extends State<NewTaskDialog> with SingleTickerProvider
                           child: TabBarView(
                             controller: _tabController,
                             children: [
-            
                               // vista per form
-            
                               Center(
                                 child: Text("Selected: Form"),
                               ),
-            
+
                               // vista per json
-            
-                              SizedBox(
-                                height: 300,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: TextFormField(
-                                    cursorColor: colorsModel.coloreSecondario,
-                                    textInputAction: TextInputAction.done,
-                                    onFieldSubmitted: (_){},
-                                    textAlign: TextAlign.start,
-                                    textAlignVertical: TextAlignVertical.top,
-                                    validator: (value) {
-                                      if (value == null || value.isEmpty) {
-                                        return "Inserire task in formato JSON";
-                                      }
-                                      return null;
-                                    },
-                                    onChanged: (value) {
-                                      json = value;
-                                    },
-                                    style: TextStyle(
-                                      color: colorsModel.textColor,
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.normal,
-                                    ),
-                                    decoration: InputDecoration(
-                                      hintText: "JSON",
-                                      hoverColor: colorsModel.coloreSecondario,
-                                      hintStyle: TextStyle(color: Colors.grey),
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(15)
+                              Form(
+                                key: _formKey,  // Associating the form key
+                                child: Column(
+                                  children: [
+                                    SizedBox(
+                                      height: 200,
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: TextFormField(
+                                          controller: _jsonController,
+                                          cursorColor: colorsModel.coloreSecondario,
+                                          textInputAction: TextInputAction.done,
+                                          onFieldSubmitted: (_) {},
+                                          textAlign: TextAlign.start,
+                                          textAlignVertical: TextAlignVertical.top,
+                                          validator: (value) {
+                                            if (value == null || value.isEmpty) {
+                                              return "Inserire task in formato JSON";
+                                            }
+                                            return null;
+                                          },
+                                          onChanged: (value) {
+                                            json = value;
+                                          },
+                                          style: TextStyle(
+                                            color: colorsModel.textColor,
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.normal,
+                                          ),
+                                          decoration: InputDecoration(
+                                            hintText: "JSON",
+                                            hoverColor: colorsModel.coloreSecondario,
+                                            hintStyle: TextStyle(color: Colors.grey),
+                                            border: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(15),
+                                            ),
+                                            focusedBorder: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(15),
+                                              borderSide: BorderSide(
+                                                color: colorsModel.coloreSecondario,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
                                       ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(15),
-                                        borderSide: BorderSide(color: colorsModel.coloreSecondario)
+                                    ),
+                                    ElevatedButton.icon(
+                                      onPressed: _pickFile,
+                                      icon: Icon(Icons.attach_file),
+                                      label: Text("Scegli file"),
+                                      style: ElevatedButton.styleFrom(
+                                        foregroundColor: Colors.white,
+                                        backgroundColor: colorsModel.coloreSecondario,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(15),
+                                        ),
+                                        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                                       ),
                                     ),
-                                  ),
+                                  ],
                                 ),
                               ),
                             ],
@@ -159,60 +207,60 @@ class _NewTaskDialogState extends State<NewTaskDialog> with SingleTickerProvider
                       ],
                     ),
                   ),
-            
+
                   // tasti 
-            
                   Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-            
-                    // tasto annulla
-            
-                    GestureDetector(
-                      onTap: (){
-                        Navigator.pop(context, null);
-                      },
-                      child: Text(
-                        "Annulla",
-                        style: TextStyle(
-                          color: colorsModel.coloreSecondario,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      // tasto annulla
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.pop(context, null);
+                        },
+                        child: Text(
+                          "Annulla",
+                          style: TextStyle(
+                            color: colorsModel.coloreSecondario,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
-                    ),
-            
-                    // tasto invia
-                    ElevatedButton(
-                      onPressed: () {
-                        if(_selectedIndex == 0){
-                          //TODO
-                        }else{
-                          // TODO validate form
-                          Navigator.pop(context, json);
-                        }
-                      }, 
-                      style: ElevatedButton.styleFrom(
-                        foregroundColor: Colors.white, 
-                        backgroundColor: colorsModel.coloreSecondario,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
+
+                      // tasto invia
+                      ElevatedButton(
+                        onPressed: () {
+                          if (_selectedIndex == 0) {
+                            // TODO: Gestione della tab "Form"
+                          } else {
+                            if (_formKey.currentState?.validate() ?? false) {
+                              Navigator.pop(context, json);
+                            }
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          backgroundColor: colorsModel.coloreSecondario,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 30,
+                            vertical: 15,
+                          ),
+                          elevation: 5,
+                          shadowColor: Colors.black,
                         ),
-                        padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-                        elevation: 5,
-                        shadowColor: Colors.black,
-                      ),                          
-                      child: Text(
-                        "Invia",
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
+                        child: Text(
+                          "Invia",
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
-                    ),
-                    
-                  ],
-                ),
+                    ],
+                  ),
                 ],
               ),
             ),
