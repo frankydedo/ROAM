@@ -108,7 +108,7 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
   Future showNewTaskDialog(BuildContext context) {
     return showDialog(
       context: context,
-      builder: (context) => NewTaskDialog(validTask: validTask),
+      builder: (context) => NewTaskDialog(),
     );
   }
 
@@ -143,7 +143,7 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
         if(projectProvider.projects.elementAt(_selectedTabIndex).tasks.isEmpty){
           millisecondsSinceStart = 0;
         }else{
-          millisecondsSinceStart = millisecondsSinceStart! + 1000;
+          millisecondsSinceStart = millisecondsSinceStart! + 925;   //TODO: fix live timing
           List<int> starts = [];
           for(Task t in projectProvider.projects.elementAt(_selectedTabIndex).tasks){
             if(t.state.toLowerCase() != "queued"){

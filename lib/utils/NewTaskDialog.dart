@@ -1,5 +1,6 @@
 // ignore_for_file: deprecated_member_use, must_be_immutable
 
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -9,12 +10,12 @@ import 'package:provider/provider.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:fleet_manager/providers/ColorsProvider.dart';
 import 'package:fleet_manager/providers/ProjectProvider.dart';
+import 'package:http/http.dart' as http;
+
 
 class NewTaskDialog extends StatefulWidget {
 
-  List<String> validTask;
-
-  NewTaskDialog({super.key, required this.validTask});
+  NewTaskDialog({super.key});
 
   @override
   State<NewTaskDialog> createState() => _NewTaskDialogState();
@@ -24,23 +25,96 @@ class _NewTaskDialogState extends State<NewTaskDialog> with SingleTickerProvider
 
   late TabController _tabController;
   int _selectedIndex = 0;
+  List<String> validTasks = [];
+  List<String> places = [];
+
+  String? _selectedTask;
+  String? _selectedPriority;
+  String? _selectedStartingSpot;
+  String? _selectedEndingSpot;
+
+  final String apiServerAddress = "http://localhost:8083";
   
-  // GlobalKey for the Form
   final _jsonFormKey = GlobalKey<FormState>();
   final _formFormKey = GlobalKey<FormState>();
+
   final TextEditingController _jsonController = TextEditingController();
   final TextEditingController _minutiController = TextEditingController();
+  final TextEditingController _loopsController = TextEditingController();
 
+  List<String> deliveryTemplate = [
+    '{"task_type":"Delivery","start_time":',
+    ',"priority":',
+    ',"description":{"dropoff_ingestor":"coke_ingestor","dropoff_place_name":"hardware_2","pickup_dispenser":"coke_dispenser","pickup_place_name":"pantry"}}'
+  ];
+
+  List<String> loopTemplate = [
+    '{"task_type":"Loop","start_time":',
+    ',"priority":',
+    ',"description":{"num_loops":',
+    ',"start_name":',
+    ',"finish_name":',
+    '}}'
+  ];
+
+  
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+
+    _initializeData();
 
     _tabController.addListener(() {
       setState(() {
         _selectedIndex = _tabController.index;
       });
     });
+  }
+
+  Future<void> _initializeData() async {
+    try {
+      List<String> fetchedValidTasks = await getValidTasks();
+      List<String> fetchedPlaces = await getPlaces();
+      
+      setState(() {
+        validTasks = fetchedValidTasks;
+        places = fetchedPlaces;
+      });
+
+    } catch (e) {
+      print("Error initializing data: ${e.toString()}");
+    }
+  }
+
+  Future<List<String>> getValidTasks() async {
+    try {
+      final response = await http.get(Uri.parse('$apiServerAddress/dashboard_config'));
+
+      if (response.statusCode == 200) {
+        Map<String, dynamic> jsonMap = json.decode(response.body);
+        return List<String>.from(jsonMap['valid_task']);
+      } else {
+        throw Exception('Failed to load valid tasks');
+      }
+    } catch (e) {
+      throw Exception('Error: ${e.toString()}');
+    }
+  }
+
+  Future<List<String>> getPlaces() async {
+    try {
+      final response = await http.get(Uri.parse('$apiServerAddress/dashboard_config'));
+
+      if (response.statusCode == 200) {
+        Map<String, dynamic> jsonMap = json.decode(response.body);
+        return List<String>.from(jsonMap['task']['Loop']['places']);
+      } else {
+        throw Exception('Failed to load places');
+      }
+    } catch (e) {
+      throw Exception('Error: ${e.toString()}');
+    }
   }
 
   @override
@@ -89,9 +163,6 @@ class _NewTaskDialogState extends State<NewTaskDialog> with SingleTickerProvider
 
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
-
-    String? _selectedTask;
-    String? _selectedPriority;
 
     return Consumer2<ColorsProvider, ProjectProvider>(
       builder: (context, colorsModel, projectsModel, _) {
@@ -153,20 +224,20 @@ class _NewTaskDialogState extends State<NewTaskDialog> with SingleTickerProvider
                           child: TabBarView(
                             controller: _tabController,
                             children: [
+
                               // vista per form
                               Form(
                                 key: _formFormKey,
                                 child: Column(
                                   children: [
-                                
                                     SizedBox(
                                       width: screenWidth * 0.5,
                                       child: Padding(
                                         padding: const EdgeInsets.all(8.0),
                                         child: DropdownButtonFormField<String>(
                                           validator: (value) {
-                                            if(value == null){
-                                              return "Sceglere il task da eseguire";
+                                            if (value == null) {
+                                              return "Scegliere il task da eseguire";
                                             }
                                             return null;
                                           },
@@ -177,7 +248,7 @@ class _NewTaskDialogState extends State<NewTaskDialog> with SingleTickerProvider
                                             fontWeight: FontWeight.normal,
                                           ),
                                           decoration: InputDecoration(
-                                            hintText: "seleziona un task",
+                                            hintText: "Seleziona un task",
                                             hintStyle: TextStyle(color: Colors.grey),
                                             border: OutlineInputBorder(
                                               borderRadius: BorderRadius.circular(15),
@@ -192,7 +263,7 @@ class _NewTaskDialogState extends State<NewTaskDialog> with SingleTickerProvider
                                               _selectedTask = newValue;
                                             });
                                           },
-                                          items: widget.validTask.map((String task) {
+                                          items: validTasks.map((String task) {
                                             return DropdownMenuItem<String>(
                                               value: task,
                                               child: Text(task),
@@ -201,39 +272,114 @@ class _NewTaskDialogState extends State<NewTaskDialog> with SingleTickerProvider
                                         ),
                                       ),
                                     ),
-                                
+
                                     SizedBox(
                                       width: screenWidth * 0.5,
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: TextFormField(
-                                          keyboardType: TextInputType.number,
-                                          controller: _minutiController,
-                                          cursorColor: colorsModel.coloreSecondario,
-                                          textInputAction: TextInputAction.done,
-                                          textAlign: TextAlign.start,
-                                          textAlignVertical: TextAlignVertical.top,
-                                          validator: (value) {
-                                            //TODO
-                                            return null;
-                                          },
-                                          style: TextStyle(
-                                            color: Colors.black,
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.normal,
-                                          ),
-                                          decoration: InputDecoration(
-                                            hintText: "minuti da ora",
-                                            hintStyle: TextStyle(color: Colors.grey),
-                                            border: OutlineInputBorder(
-                                              borderRadius: BorderRadius.circular(15),
+                                      child: Row(
+                                        children: [
+                                          SizedBox(
+                                            width: screenWidth * 0.32,
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(8.0),
+                                              child: TextFormField(
+                                                keyboardType: TextInputType.number,
+                                                controller: _minutiController,
+                                                cursorColor: colorsModel.coloreSecondario,
+                                                textInputAction: TextInputAction.done,
+                                                textAlign: TextAlign.start,
+                                                textAlignVertical: TextAlignVertical.top,
+                                                validator: (value) {
+                                                  if (value == null || value.isEmpty) {
+                                                    return "Inserire i minuti";
+                                                  }
+                                                  if (int.tryParse(value) == null || int.parse(value) < 0) {
+                                                    return "Inserire un valore positivo";
+                                                  }
+                                                  return null;
+                                                },
+                                                style: TextStyle(
+                                                  color: Colors.black,
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.normal,
+                                                ),
+                                                decoration: InputDecoration(
+                                                  hintText: "Minuti da ora",
+                                                  hintStyle: TextStyle(color: Colors.grey),
+                                                  border: OutlineInputBorder(
+                                                    borderRadius: BorderRadius.circular(15),
+                                                  ),
+                                                  focusedBorder: OutlineInputBorder(
+                                                    borderRadius: BorderRadius.circular(15),
+                                                    borderSide: BorderSide(color: colorsModel.coloreSecondario),
+                                                  ),
+                                                ),
+                                              ),
                                             ),
-                                            focusedBorder: OutlineInputBorder(
-                                              borderRadius: BorderRadius.circular(15),
-                                              borderSide: BorderSide(color: colorsModel.coloreSecondario),
+                                          ),
+                                          Spacer(),
+                                          Text(
+                                            "OPPURE",
+                                            style: GoogleFonts.encodeSans(
+                                              color: colorsModel.textColor,
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w600,
                                             ),
                                           ),
-                                        ),
+                                          Spacer(),
+                                          SizedBox(
+                                            width: screenWidth * 0.12,
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(8.0),
+                                              child: ElevatedButton(
+                                                onPressed: () async {
+                                                  DateTime? pickedDate = await showDatePicker(
+                                                    context: context,
+                                                    initialDate: DateTime.now(),
+                                                    firstDate: DateTime.now(),
+                                                    lastDate: DateTime(2101),
+                                                  );
+
+                                                  if (pickedDate != null) {
+                                                    TimeOfDay? pickedTime = await showTimePicker(
+                                                      context: context,
+                                                      initialTime: TimeOfDay.now(),
+                                                    );
+
+                                                    if (pickedTime != null) {
+                                                      DateTime finalDateTime = DateTime(
+                                                        pickedDate.year,
+                                                        pickedDate.month,
+                                                        pickedDate.day,
+                                                        pickedTime.hour,
+                                                        pickedTime.minute,
+                                                      );
+
+                                                      int diff = ((finalDateTime.millisecondsSinceEpoch - DateTime.now().millisecondsSinceEpoch) / 60000).round();
+                                                      setState(() {
+                                                        _minutiController.text = diff.toString();
+                                                      });
+                                                    }
+                                                  }
+                                                },
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor: colorsModel.coloreSecondario,
+                                                  padding: EdgeInsets.symmetric(vertical: 15),
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius: BorderRadius.circular(15),
+                                                  ),
+                                                ),
+                                                child: Text(
+                                                  "Seleziona data e ora",
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 14,
+                                                    fontWeight: FontWeight.normal,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
 
@@ -255,7 +401,7 @@ class _NewTaskDialogState extends State<NewTaskDialog> with SingleTickerProvider
                                             fontWeight: FontWeight.normal,
                                           ),
                                           decoration: InputDecoration(
-                                            hintText: "seleziona una priorità",
+                                            hintText: "Seleziona una priorità",
                                             hintStyle: TextStyle(color: Colors.grey),
                                             border: OutlineInputBorder(
                                               borderRadius: BorderRadius.circular(15),
@@ -267,30 +413,158 @@ class _NewTaskDialogState extends State<NewTaskDialog> with SingleTickerProvider
                                           ),
                                           onChanged: (String? newValue) {
                                             setState(() {
-                                              _selectedTask = newValue;
+                                              _selectedPriority = newValue;
                                             });
                                           },
                                           items: [
                                             DropdownMenuItem<String>(
-                                              value: "High",
+                                              value: "1",
                                               child: Text("High")
                                             ),
                                             DropdownMenuItem(
-                                              value: "Low",
+                                              value: "0",
                                               child: Text("Low")
                                             ),
-
                                           ],
                                         ),
                                       ),
                                     ),
-                                
-                                //TODO: temrinare il form
-                                
-                                
+
+                                    if (_selectedTask == "Loop")
+
+                                      Column(
+                                        children: [
+                                          SizedBox(
+                                            width: screenWidth * 0.5,
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(8.0),
+                                              child: TextFormField(
+                                                keyboardType: TextInputType.number,
+                                                controller: _loopsController,
+                                                cursorColor: colorsModel.coloreSecondario,
+                                                textInputAction: TextInputAction.done,
+                                                textAlign: TextAlign.start,
+                                                textAlignVertical: TextAlignVertical.top,
+                                                validator: (value) {
+                                                  if (value == null || value.isEmpty) {
+                                                    return "Inserire il numero di loop";
+                                                  }
+                                                  if (int.tryParse(value) == null || int.parse(value) < 0) {
+                                                    return "Inserire un valore positivo";
+                                                  }
+                                                  return null;
+                                                },
+                                                style: TextStyle(
+                                                  color: Colors.black,
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.normal,
+                                                ),
+                                                decoration: InputDecoration(
+                                                  hintText: "Numero di loop",
+                                                  hintStyle: TextStyle(color: Colors.grey),
+                                                  border: OutlineInputBorder(
+                                                    borderRadius: BorderRadius.circular(15),
+                                                  ),
+                                                  focusedBorder: OutlineInputBorder(
+                                                    borderRadius: BorderRadius.circular(15),
+                                                    borderSide: BorderSide(color: colorsModel.coloreSecondario),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          
+                                          SizedBox(
+                                            width: screenWidth * 0.5,
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(8.0),
+                                              child: DropdownButtonFormField<String>(
+                                                validator: (value) {
+                                                  if (value == null) {
+                                                    return "Scegliere il punto di partenza";
+                                                  }
+                                                  return null;
+                                                },
+                                                value: _selectedStartingSpot,
+                                                style: TextStyle(
+                                                  color: Colors.black,
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.normal,
+                                                ),
+                                                decoration: InputDecoration(
+                                                  hintText: "Seleziona un punto di partenza",
+                                                  hintStyle: TextStyle(color: Colors.grey),
+                                                  border: OutlineInputBorder(
+                                                    borderRadius: BorderRadius.circular(15),
+                                                  ),
+                                                  focusedBorder: OutlineInputBorder(
+                                                    borderRadius: BorderRadius.circular(15),
+                                                    borderSide: BorderSide(color: colorsModel.coloreSecondario),
+                                                  ),
+                                                ),
+                                                onChanged: (String? newValue) {
+                                                  setState(() {
+                                                    _selectedStartingSpot = newValue;
+                                                  });
+                                                },
+                                                items: places.map((String place) {
+                                                  return DropdownMenuItem<String>(
+                                                    value: place,
+                                                    child: Text(place),
+                                                  );
+                                                }).toList(),
+                                              ),
+                                            ),
+                                          ),
+                                          
+                                          SizedBox(
+                                            width: screenWidth * 0.5,
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(8.0),
+                                              child: DropdownButtonFormField<String>(
+                                                validator: (value) {
+                                                  if (value == null) {
+                                                    return "Scegliere il punto di arrivo";
+                                                  }
+                                                  return null;
+                                                },
+                                                value: _selectedEndingSpot,
+                                                style: TextStyle(
+                                                  color: Colors.black,
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.normal,
+                                                ),
+                                                decoration: InputDecoration(
+                                                  hintText: "Seleziona un punto di arrivo",
+                                                  hintStyle: TextStyle(color: Colors.grey),
+                                                  border: OutlineInputBorder(
+                                                    borderRadius: BorderRadius.circular(15),
+                                                  ),
+                                                  focusedBorder: OutlineInputBorder(
+                                                    borderRadius: BorderRadius.circular(15),
+                                                    borderSide: BorderSide(color: colorsModel.coloreSecondario),
+                                                  ),
+                                                ),
+                                                onChanged: (String? newValue) {
+                                                  setState(() {
+                                                    _selectedEndingSpot = newValue;
+                                                  });
+                                                },
+                                                items: places.map((String place) {
+                                                  return DropdownMenuItem<String>(
+                                                    value: place,
+                                                    child: Text(place),
+                                                  );
+                                                }).toList(),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                   ],
                                 ),
                               ),
+
 
                               // vista per json
                               Form(
@@ -380,7 +654,29 @@ class _NewTaskDialogState extends State<NewTaskDialog> with SingleTickerProvider
                       ElevatedButton(
                         onPressed: () {
                           if (_selectedIndex == 0) {
-                            // TODO: Gestione della tab "Form"
+
+                            String t;
+
+                            if (_formFormKey.currentState?.validate() ?? false) {
+                              if(_selectedTask == "Loop"){
+                                t = 
+                                  loopTemplate[0]+_minutiController.text+
+                                  loopTemplate[1]+_selectedPriority!+
+                                  loopTemplate[2]+_loopsController.text+
+                                  loopTemplate[3]+'"'+_selectedStartingSpot!+'"'+
+                                  loopTemplate[4]+'"'+_selectedEndingSpot!+'"'+
+                                  loopTemplate[5];
+                              }else{
+                                t = 
+                                  deliveryTemplate[0]+_minutiController.text+
+                                  deliveryTemplate[1]+_selectedPriority!+
+                                  deliveryTemplate[2];
+                              }
+
+                              Navigator.pop(context, t);
+
+                            }
+
                           } else {
                             if (_jsonFormKey.currentState?.validate() ?? false) {
                               Navigator.pop(context, _jsonController.text);

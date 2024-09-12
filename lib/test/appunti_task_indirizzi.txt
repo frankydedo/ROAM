@@ -1,0 +1,177 @@
+ROBOT LIST:
+
+[
+{
+assignments: [], 
+battery_percent: 46.0, 
+fleet_name: tinyRobot, 
+level_name: L1, 
+location_x: 20.413469314575195, 
+location_y: -5.303375720977783, 
+location_yaw: -0.7124775052070618, 
+mode: Idle-0, 
+robot_name: tinyRobot2
+}, 
+]
+
+
+
+					TASK LIST:
+
+
+[
+  {
+    "booking": {
+      "id": "delivery.dispatch-19c3cd11f7",			// TASK ID
+      "unix_millis_earliest_start_time": 118320,		
+      "unix_millis_request_time": null,
+      "priority": null,
+      "labels": ["rmf_demos.simple_api_server"],
+      "requester": null
+    },
+    "category": "Delivery",					// CATEGORY
+    "detail": {},
+    "unix_millis_start_time": 120640,				// START TIME
+    "unix_millis_finish_time": 195582,				// FINISH TIME
+    "original_estimate_millis": 49324,				
+    "estimate_millis": 74872,					// EST. DURATION
+    "assigned_to": {
+      "group": "tinyRobot",					// FLEET NAME
+      "name": "tinyRobot2"					// ROBOT NAME
+    },
+    "status": "underway",					// STATUS
+    "dispatch": null,
+    "phases": {
+      "1": {
+        "id": 1,
+        "category": "Pick up",
+        "detail": "Pick up nothing at [place:pantry]",
+        "unix_millis_start_time": 120640,
+        "unix_millis_finish_time": null,
+        "original_estimate_millis": 26525,
+        "estimate_millis": 25548,
+        "final_event_id": 0,
+        "events": {
+          "0": {
+            "id": 0,
+            "status": "underway",
+            "name": "Pick up",
+            "detail": {},
+            "deps": [1, 2]
+          },
+          "1": {
+            "id": 1,
+            "status": "underway",
+            "name": "Go to [place:pantry]",
+            "detail": "Moving the robot from [place:tinyRobot2_charger] to [place:pantry]",
+            "deps": [3]
+          },
+          "2": {
+            "id": 2,
+            "status": "standby",
+            "name": "Loaditems",
+            "detail": "Dispense items ()",
+            "deps": []
+          },
+          "3": {
+            "id": 3,
+            "status": "underway",
+            "name": "Move to [place:pantry] < 16.8463 -5.40407  1.57722> through 8 points",
+            "detail": {},
+            "deps": []
+          }
+        },
+        "skip_requests": null
+      },
+      "2": {
+        "id": 2,
+        "category": "Drop off",
+        "detail": "Drop off nothing at [place:hardware_2]",
+        "unix_millis_start_time": null,
+        "unix_millis_finish_time": null,
+        "original_estimate_millis": null,
+        "estimate_millis": 49324,
+        "final_event_id": null,
+        "events": null,
+        "skip_requests": null
+      }
+    },
+    "completed": [],
+    "active": 1,
+    "pending": [2],
+    "interruptions": null,
+    "cancellation": null,
+    "killed": null
+  }
+]
+
+
+TASK CHE HA GENERATO ECCEZIONE:
+
+{
+  "booking": {
+    "id": "patrol.dispatch-f0fc8275e2",
+    "unix_millis_earliest_start_time": 0,
+    "unix_millis_request_time": 1725632300285,
+    "priority": {
+      "type": "binary",
+      "value": 0
+    },
+    "labels": null,
+    "requester": "stub"
+  },
+  "category": "patrol",
+  "detail": {
+    "places": [
+      "patrol_D1"
+    ],
+    "rounds": 1
+  },
+  "unix_millis_start_time": 0,
+  "unix_millis_finish_time": null,
+  "original_estimate_millis": null,
+  "estimate_millis": null,
+  "assigned_to": null,
+  "status": "queued",
+  "dispatch": {
+    "status": "queued",
+    "assignment": null,
+    "errors": []
+  },
+  "phases": null,
+  "completed": null,
+  "active": null,
+  "pending": null,
+  "interruptions": null,
+  "cancellation": null,
+  "killed": null
+}
+
+
+
+
+
+
+cancel task:
+
+{"type":"cancel_task_request","task_id":"patrol.dispatch-bd2cdf96b8"}
+
+http://localhost:8000/tasks/cancel_task
+
+
+
+
+
+
+request loop:
+
+{"task_type":"Loop","start_time":0,"priority":0,"description":{"num_loops":3,"start_name":"lounge","finish_name":"coe"}}
+
+
+
+
+request delivery:
+
+{"task_type":"Delivery","start_time":0,"priority":0,"description":{"dropoff_ingestor":"coke_ingestor","dropoff_place_name":"hardware_2","pickup_dispenser":"coke_dispenser","pickup_place_name":"pantry"}}
+
+
