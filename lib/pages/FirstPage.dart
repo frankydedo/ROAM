@@ -184,7 +184,7 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
         if(projectProvider.projects.elementAt(_selectedTabIndex).tasks.isEmpty){
           millisecondsSinceStart = 0;
         }else{
-          millisecondsSinceStart = millisecondsSinceStart! + 905;   //TODO: fix live timing
+          millisecondsSinceStart = millisecondsSinceStart! + 906;   //TODO: fix live timing
           List<int> starts = [];
           for(Task t in projectProvider.projects.elementAt(_selectedTabIndex).tasks){
             if(t.state.toLowerCase() != "queued"){

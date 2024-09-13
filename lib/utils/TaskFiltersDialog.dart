@@ -1,4 +1,4 @@
-// ignore_for_file: deprecated_member_use
+// ignore_for_file: deprecated_member_use, must_be_immutable
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -68,7 +68,6 @@ class _TaskFiltersDialogState extends State<TaskFiltersDialog> with SingleTicker
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
-    double screenHeight = MediaQuery.of(context).size.height;
 
     return Consumer2<ColorsProvider, ProjectProvider>(
       builder: (context, colorsModel, projectsModel, _) {
