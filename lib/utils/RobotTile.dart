@@ -61,170 +61,173 @@ class _RobotTileState extends State<RobotTile> with SingleTickerProviderStateMix
 
     return Consumer2<ColorsProvider, ProjectProvider>(
       builder: (context, colorsModel, projectsModel, _) {
-        return GestureDetector(
-          onTap: () {
-            setState(() {
-              isExpanded = !isExpanded;
-            });
-          },
-          child: AnimatedSize(
-            duration: Duration(milliseconds: 300),
-            curve: Curves.fastOutSlowIn,
-            child: Container(
-              padding: EdgeInsets.all(12),
-              width: 300,
-              decoration: BoxDecoration(
-                color: colorsModel.tileBackGroudColor,
-                borderRadius: BorderRadius.circular(15),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    spreadRadius: 3,
-                    blurRadius: 5,
-                    offset: Offset(0, 3),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Indicatore percentuale
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Row(
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              widget.robot.name,
-                              style: GoogleFonts.encodeSans(
-                                color: colorsModel.textColor,
-                                fontSize: 25,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text(
-                                widget.robot.fleet,
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(12,12,0,12),
+          child: GestureDetector(
+            onTap: () {
+              setState(() {
+                isExpanded = !isExpanded;
+              });
+            },
+            child: AnimatedSize(
+              duration: Duration(milliseconds: 300),
+              curve: Curves.fastOutSlowIn,
+              child: Container(
+                padding: EdgeInsets.all(12),
+                width: 300,
+                decoration: BoxDecoration(
+                  color: colorsModel.tileBackGroudColor,
+                  borderRadius: BorderRadius.circular(15),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      spreadRadius: 3,
+                      blurRadius: 5,
+                      offset: Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Indicatore percentuale
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Row(
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                widget.robot.name,
                                 style: GoogleFonts.encodeSans(
                                   color: colorsModel.textColor,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w500,
+                                  fontSize: 25,
+                                  fontWeight: FontWeight.w700,
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                        Spacer(),
-                        CircularPercentIndicator(
-                          radius: 35,
-                          lineWidth: 8,
-                          percent: widget.robot.batteryLevel / 100,
-                          progressColor: coloreDaBatteria(widget.robot.batteryLevel ),
-                          animationDuration: 700,
-                          animation: true,
-                          animateFromLastPercent: true,
-                          circularStrokeCap: CircularStrokeCap.round,
-                          center: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              if (widget.robot.status == "Charging")
-                                Icon(Icons.bolt_rounded, color: colorsModel.coloreSecondario),
-                              Text(
-                                "${widget.robot.batteryLevel.round()}%",
-                                style: GoogleFonts.encodeSans(
-                                  color: colorsModel.coloreSecondario,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w700,
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  widget.robot.fleet,
+                                  style: GoogleFonts.encodeSans(
+                                    color: colorsModel.textColor,
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w500,
+                                  ),
                                 ),
                               ),
                             ],
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // Indicatore di stato
-                  Center(
-                    child: Container(
-                      height: 24,
-                      width: 140,
-                      decoration: BoxDecoration(
-                        color: coloreDaStato(widget.robot.status),
-                        borderRadius: BorderRadius.circular(15),
+                          Spacer(),
+                          CircularPercentIndicator(
+                            radius: 35,
+                            lineWidth: 8,
+                            percent: widget.robot.batteryLevel / 100,
+                            progressColor: coloreDaBatteria(widget.robot.batteryLevel ),
+                            animationDuration: 700,
+                            animation: true,
+                            animateFromLastPercent: true,
+                            circularStrokeCap: CircularStrokeCap.round,
+                            center: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                if (widget.robot.status == "Charging")
+                                  Icon(Icons.bolt_rounded, color: colorsModel.coloreSecondario),
+                                Text(
+                                  "${widget.robot.batteryLevel.round()}%",
+                                  style: GoogleFonts.encodeSans(
+                                    color: colorsModel.coloreSecondario,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
-                      child: Center(
-                        child: Text(
-                          widget.robot.status.toUpperCase(),
-                          style: GoogleFonts.encodeSans(
-                            color: Colors.white,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
                     ),
-                  ),
-
-                  // Informazioni robot
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
-                    child: Row(
-                      children: [
-                        Text(
-                          "Location",
-                          style: GoogleFonts.encodeSans(
-                            color: const Color.fromRGBO(158, 158, 158, 1),
-                            fontSize: 20,
-                            fontWeight: FontWeight.w700,
-                          ),
+          
+                    // Indicatore di stato
+                    Center(
+                      child: Container(
+                        height: 24,
+                        width: 140,
+                        decoration: BoxDecoration(
+                          color: coloreDaStato(widget.robot.status),
+                          borderRadius: BorderRadius.circular(15),
                         ),
-                        Spacer(),
-                        Text(
-                          widget.robot.location.toString(),
-                          style: GoogleFonts.encodeSans(
-                            color: colorsModel.textColor,
-                            fontSize: 20,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // Tasto mostra task (visibile solo se isExpanded è true)
-                  if (isExpanded)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 12.0),
-                      child: Center(
-                        child: ElevatedButton(
-                          onPressed: () {
-                            if (widget.robot.status.toLowerCase() == "working") {
-                              widget.onHighlightTask();
-                            } else {
-                              MySnackBar(text: "Questo robot al momento non è occupato.", isError: false).show(context);
-                            }
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: colorsModel.tileBackGroudColor,
-                          ),
+                        child: Center(
                           child: Text(
-                            "Mostra task corrente",
+                            widget.robot.status.toUpperCase(),
                             style: GoogleFonts.encodeSans(
-                              color: widget.robot.status.toLowerCase() == "working"
-                                  ? colorsModel.coloreSecondario
-                                  : colorsModel.coloreSecondario.withOpacity(.5),
-                              fontSize: 20,
-                              fontWeight: FontWeight.w500,
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
                         ),
                       ),
                     ),
-                ],
+          
+                    // Informazioni robot
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+                      child: Row(
+                        children: [
+                          Text(
+                            "Location",
+                            style: GoogleFonts.encodeSans(
+                              color: const Color.fromRGBO(158, 158, 158, 1),
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          Spacer(),
+                          Text(
+                            widget.robot.location.toString(),
+                            style: GoogleFonts.encodeSans(
+                              color: colorsModel.textColor,
+                              fontSize: 20,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+          
+                    // Tasto mostra task (visibile solo se isExpanded è true)
+                    if (isExpanded)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 12.0),
+                        child: Center(
+                          child: ElevatedButton(
+                            onPressed: () {
+                              if (widget.robot.status.toLowerCase() == "working") {
+                                widget.onHighlightTask();
+                              } else {
+                                MySnackBar(text: "Questo robot al momento non è occupato.", isError: false).show(context);
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: colorsModel.tileBackGroudColor,
+                            ),
+                            child: Text(
+                              "Mostra task corrente",
+                              style: GoogleFonts.encodeSans(
+                                color: widget.robot.status.toLowerCase() == "working"
+                                    ? colorsModel.coloreSecondario
+                                    : colorsModel.coloreSecondario.withOpacity(.5),
+                                fontSize: 20,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
               ),
             ),
           ),

@@ -14,6 +14,7 @@ import 'package:fleet_manager/utils/NewTaskDialog.dart';
 import 'package:fleet_manager/utils/RealTimeStatusWidget.dart';
 import 'package:fleet_manager/utils/RobotTile.dart';
 import 'package:fleet_manager/utils/SelettoreTemaDialog.dart';
+import 'package:fleet_manager/utils/TaskFiltersDialog.dart';
 import 'package:fleet_manager/utils/TaskTile.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -39,6 +40,13 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
   final webSocketService = WebSocketService('ws://localhost:8000/_internal');
   int? millisecondsSinceStart = null;
   late List<String> validTask;
+
+  bool showUnderway = true;
+  bool showCompleted = true;
+  bool showStandby = true;
+  bool showQueued = true;
+  bool showCanceled = true;
+  bool showFailed = true;
 
   @override
   void initState() {
@@ -67,6 +75,25 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
         highlightedTaskRobotName = null;
       });
     });
+  }
+
+  bool mustBeVisible (Task t){
+    switch (t.state.toLowerCase()){
+      case "underway": 
+        return showUnderway;
+      case "completed":
+        return showCompleted;
+      case "queued":
+        return showQueued;
+      case "standby":
+        return showStandby;
+      case "canceled":
+        return showCanceled;
+      case "failed":
+        return showFailed;
+      default:
+        return true;
+    }
   }
 
   String secToHoursMinsSecs(int seconds) {
@@ -112,6 +139,20 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
     );
   }
 
+  Future showTaskFiltersDialog(BuildContext context) {
+    return showDialog(
+      context: context,
+      builder: (context) => TaskFiltersDialog(
+        showCanceled: showCanceled,
+        showCompleted: showCompleted,
+        showFailed: showFailed,
+        showQueued: showQueued,
+        showStandby: showStandby,
+        showUnderway: showUnderway,
+      ),
+    );
+  }
+
   ////////////////////////// METODI  HTTP /////////////////////////
 
   void startFetching(){
@@ -143,7 +184,7 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
         if(projectProvider.projects.elementAt(_selectedTabIndex).tasks.isEmpty){
           millisecondsSinceStart = 0;
         }else{
-          millisecondsSinceStart = millisecondsSinceStart! + 925;   //TODO: fix live timing
+          millisecondsSinceStart = millisecondsSinceStart! + 905;   //TODO: fix live timing
           List<int> starts = [];
           for(Task t in projectProvider.projects.elementAt(_selectedTabIndex).tasks){
             if(t.state.toLowerCase() != "queued"){
@@ -376,7 +417,7 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
                                 // Gestione della risposta
                                 if (response != null) {
                                   if (response['task_id'] != null && response['task_id'] != "") {
-                                    MySnackBar(text: "Request submitted successfully! Task ID: ${response["task_id"]}", isError: false).show(context);
+                                    MySnackBar(text: "Request submitted successfully!", isError: false).show(context);
                                   } else {
                                     MySnackBar(text: "Delivery Request failed! ${response["error_msg"]}", isError: true).show(context);
                                   }
@@ -473,17 +514,64 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
 
                                     // Task
 
-                                    Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Center(
-                                        child: Text(
-                                          "Planning Commander",
-                                          style: GoogleFonts.encodeSans(
-                                              color: colorsModel.coloreTitoli,
-                                              fontSize: 24,
-                                              fontWeight: FontWeight.w700),
+                                    Stack(
+                                      children:[ 
+                                        Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Center(
+                                            child: Text(
+                                              "Planning Commander",
+                                              style: GoogleFonts.encodeSans(
+                                                  color: colorsModel.coloreTitoli,
+                                                  fontSize: 24,
+                                                  fontWeight: FontWeight.w700),
+                                            ),
+                                          ),
                                         ),
-                                      ),
+
+                                        Row(
+                                          children: [
+                                            Spacer(),
+
+                                            Padding(
+                                              padding: const EdgeInsets.fromLTRB(0,8,24,8),
+                                              child: ElevatedButton(
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: colorsModel.coloreSecondario
+                                              ),
+                                              onPressed: () async {
+                                                List<bool>? vals = await showTaskFiltersDialog(context);
+                                                if (vals != null){
+
+                                                  setState(() {
+                                                    showUnderway = vals[0];
+                                                    showCompleted = vals[1];
+                                                    showQueued = vals[2];
+                                                    showStandby = vals[3];
+                                                    showCanceled = vals[4];
+                                                    showFailed = vals[5];
+                                                  });
+
+                                                }
+                                              }, 
+                                              child: Row(
+                                                children: [
+                                                  Text(
+                                                  "Filtri  ",
+                                                    style: GoogleFonts.encodeSans(
+                                                      color: Colors.white,
+                                                      fontSize: 18,
+                                                      fontWeight: FontWeight.w500
+                                                    ),
+                                                  ),
+                                                  Icon(Icons.filter_alt_rounded, color: Colors.white,)
+                                              ],
+                                              )
+                                              ),
+                                            )
+                                          ],
+                                        )
+                                      ]
                                     ),
 
                                     projectsModel.projects.elementAt(_selectedTabIndex).tasks.isEmpty ? 
@@ -516,12 +604,16 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
                                         child: Wrap(
                                           children: projectsModel.getProjectTask(projectsModel.projects.elementAt(_selectedTabIndex)).map((task) {
                                             return Padding(
-                                              padding: const EdgeInsets.fromLTRB(14, 14, 0, 12),
-                                              child: TaskTile(
+                                              padding: const EdgeInsets.all(0),
+                                              child: 
+                                              mustBeVisible(task) ?
+                                              TaskTile(
                                                 project: projectsModel.projects.elementAt(_selectedTabIndex),
                                                 task: task,
                                                 isHighlighted: highlightedTaskRobotName == task.robotName, 
-                                              ),
+                                              )
+                                              : 
+                                              null
                                             );
                                           }).toList(),
                                         ),
@@ -570,7 +662,7 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
                                         child: Wrap(
                                           children: project.robots.map((robot) {
                                             return Padding(
-                                              padding: const EdgeInsets.fromLTRB(14, 14, 0, 12),
+                                              padding: const EdgeInsets.all(0),
                                               child: RobotTile(
                                                 project: project,
                                                 robot: robot,

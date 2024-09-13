@@ -337,12 +337,50 @@ class _NewTaskDialogState extends State<NewTaskDialog> with SingleTickerProvider
                                                     initialDate: DateTime.now(),
                                                     firstDate: DateTime.now(),
                                                     lastDate: DateTime(2101),
+                                                    builder: (BuildContext context, Widget? child) {
+                                                      return Theme(
+                                                        data: ThemeData(
+                                                          colorScheme: ColorScheme.light(
+                                                            primary: colorsModel.tileBackGroudColor,
+                                                            onPrimary: colorsModel.coloreTitoli,
+                                                            onSurface: colorsModel.textColor,
+                                                            surface: colorsModel.tileBackGroudColor,
+                                                          ),
+                                                          textButtonTheme: TextButtonThemeData(
+                                                            style: TextButton.styleFrom(
+                                                              foregroundColor: colorsModel.coloreSecondario,
+                                                            ),
+                                                          ),
+                                                          dialogBackgroundColor: colorsModel.tileBackGroudColor,
+                                                        ),
+                                                        child: child!,
+                                                      );
+                                                    },
                                                   );
 
                                                   if (pickedDate != null) {
                                                     TimeOfDay? pickedTime = await showTimePicker(
                                                       context: context,
                                                       initialTime: TimeOfDay.now(),
+                                                      builder: (BuildContext context, Widget? child) {
+                                                      return Theme(
+                                                        data: ThemeData(
+                                                          colorScheme: ColorScheme.light(
+                                                            primary: colorsModel.tileBackGroudColor, 
+                                                            onPrimary: colorsModel.coloreTitoli, 
+                                                            onSurface: colorsModel.textColor, 
+                                                            surface: colorsModel.tileBackGroudColor, 
+                                                          ),
+                                                          textButtonTheme: TextButtonThemeData(
+                                                            style: TextButton.styleFrom(
+                                                              foregroundColor: colorsModel.coloreSecondario,
+                                                            ),
+                                                          ),
+                                                          dialogBackgroundColor: colorsModel.tileBackGroudColor,
+                                                        ),
+                                                        child: child!,
+                                                      );
+                                                    },
                                                     );
 
                                                     if (pickedTime != null) {
