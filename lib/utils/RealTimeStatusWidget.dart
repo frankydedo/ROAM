@@ -44,12 +44,15 @@ class _RealTimeStatusWidgetState extends State<RealTimeStatusWidget> {
 
     Timer.periodic(Duration(seconds: 1), (timer) async {
 
-      final response = await http.get(Uri.parse('http://localhost:8000/tasks'));
+      final response = await http.get(Uri.parse('http://localhost:8000'));
 
       if (response.statusCode == 200) {
         setConnected();
+        print("all good");
       } else {
         resetConnected();
+        print("not anymore");
+        showAlertDialog(context);
       }
     });
   }
