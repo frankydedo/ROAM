@@ -43,8 +43,9 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
   String? highlightedTaskRobotName;
   final String apiServerAddress = "http://localhost:8083";
   // final webSocketService = WebSocketService('ws://localhost:8000/_internal');
-  int? millisecondsSinceStart = null;
+  int? startMilliseconds = null;
   DateTime? startTimestamp = null;
+  int? millisecondsToShow = null;
   late List<String> validTask;
 
   bool showUnderway = true;
@@ -171,9 +172,9 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
       projectProvider.refreshTaskList(projectProvider.projects.elementAt(_selectedTabIndex), await getTasks());
       projectProvider.refreshProjectName(projectProvider.projects.elementAt(_selectedTabIndex), await getProjectName());
 
-      if (millisecondsSinceStart == null){
+      if (startMilliseconds == null){
         if(projectProvider.projects.elementAt(_selectedTabIndex).tasks.isEmpty){
-          millisecondsSinceStart = 0;
+          startMilliseconds = 0;
         }else{
           List<int> starts = [];
           for(Task t in projectProvider.projects.elementAt(_selectedTabIndex).tasks){
@@ -183,15 +184,16 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
           }
           if (starts.isNotEmpty){
             starts.sort((a,b) => b.compareTo(a));
-            millisecondsSinceStart = starts[0];
+            startMilliseconds = starts[0];
             startTimestamp = DateTime.now();
           }
         }
       }else{
         if(projectProvider.projects.elementAt(_selectedTabIndex).tasks.isEmpty){
-          millisecondsSinceStart = 0;
+          startMilliseconds = 0;
         }else{
-          millisecondsSinceStart = millisecondsSinceStart! + (startTimestamp!.difference(DateTime.now())).inMilliseconds;   //TODO: fix live timing
+          // startMilliseconds = startMilliseconds! + (DateTime.now().difference(startTimestamp!)).inMilliseconds;   //TODO: fix live timing
+          millisecondsToShow = startMilliseconds! + (DateTime.now().difference(startTimestamp!)).inMilliseconds;   //TODO: fix live timing
           List<int> starts = [];
           for(Task t in projectProvider.projects.elementAt(_selectedTabIndex).tasks){
             if(t.state.toLowerCase() != "queued"){
@@ -199,8 +201,8 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
             }
           }
           starts.sort((a,b) => b.compareTo(a));
-          if(starts[0]>millisecondsSinceStart!){
-            millisecondsSinceStart = starts[0];
+          if(starts[0]>startMilliseconds!){
+            startMilliseconds = starts[0];
             startTimestamp = DateTime.now();
           }
         }
@@ -344,10 +346,10 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
       if (estDuration.toLowerCase() == ""){
         return "0";
       }else{
-        if (millisecondsSinceStart == null) {
+        if (millisecondsToShow == null) {
           return "10";
         }else{
-          double perc = max(0, min(99, (millisecondsSinceStart! - int.parse(startTime)) / int.parse(estDuration) * 20));
+          double perc = max(0, min(99, (millisecondsToShow! - int.parse(startTime)) / int.parse(estDuration) * 20));
           return perc.round().toString();
         }
       }
@@ -397,8 +399,8 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
                     Icon(CupertinoIcons.clock, color: colorsModel.coloreSecondario, size: 30),
                     SizedBox(width: 8),
                     Text(
-                      millisecondsSinceStart != null ?
-                      secToHoursMinsSecs((millisecondsSinceStart! / 1000).round())
+                      millisecondsToShow != null ?
+                      millisecToHoursMinsSecs(millisecondsToShow!)
                       :
                       DateTime.now().hour.toString()+" : "+ DateTime.now().minute.toString()+" : "+ DateTime.now().second.toString(),
                       style: GoogleFonts.encodeSans(
