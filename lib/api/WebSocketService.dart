@@ -1,18 +1,18 @@
-import 'package:web_socket_channel/web_socket_channel.dart';
+// import 'package:web_socket_channel/web_socket_channel.dart';
 
-class WebSocketService {
+// class WebSocketService {
 
-  final WebSocketChannel channel;
+//   final WebSocketChannel channel;
 
-  Stream<dynamic> get stream => channel.stream;
+//   Stream<dynamic> get stream => channel.stream;
 
-  WebSocketService(String url) : channel = WebSocketChannel.connect(Uri.parse(url));
+//   WebSocketService(String url) : channel = WebSocketChannel.connect(Uri.parse(url));
 
-  void sendMessage(String message) {
-    channel.sink.add(message);
-  }
+//   void sendMessage(String message) {
+//     channel.sink.add(message);
+//   }
 
-  void close() {
-    channel.sink.close();
-  }
-}
+//   void close() {
+//     channel.sink.close();
+//   }
+// }

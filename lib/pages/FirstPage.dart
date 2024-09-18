@@ -36,7 +36,7 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
   int _selectedTabIndex = 0;
   String? highlightedTaskRobotName;
   final String apiServerAddress = "http://localhost:8083";
-  final webSocketService = WebSocketService('ws://localhost:8000/_internal');
+  // final webSocketService = WebSocketService('ws://localhost:8000/_internal');
   int? millisecondsSinceStart = null;
   late List<String> validTask;
 
@@ -338,7 +338,7 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
                 Row(
                   children: [
 
-                    RealTimeStatusWidget(url: "ws://localhost:8000/_internal"),
+                    RealTimeStatusWidget(),
 
                     SizedBox(width: 24),
 
