@@ -39,6 +39,7 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
   final String apiServerAddress = "http://localhost:8083";
   // final webSocketService = WebSocketService('ws://localhost:8000/_internal');
   int? millisecondsSinceStart = null;
+  DateTime? startTimestamp = null;
   late List<String> validTask;
 
   bool showUnderway = true;
@@ -178,13 +179,14 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
           if (starts.isNotEmpty){
             starts.sort((a,b) => b.compareTo(a));
             millisecondsSinceStart = starts[0];
+            startTimestamp = DateTime.now();
           }
         }
       }else{
         if(projectProvider.projects.elementAt(_selectedTabIndex).tasks.isEmpty){
           millisecondsSinceStart = 0;
         }else{
-          millisecondsSinceStart = millisecondsSinceStart! + 906;   //TODO: fix live timing
+          millisecondsSinceStart = (startTimestamp!.difference(DateTime.now())).inMilliseconds;   //TODO: fix live timing
           List<int> starts = [];
           for(Task t in projectProvider.projects.elementAt(_selectedTabIndex).tasks){
             if(t.state.toLowerCase() != "queued"){
@@ -194,6 +196,7 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
           starts.sort((a,b) => b.compareTo(a));
           if(starts[0]>millisecondsSinceStart!){
             millisecondsSinceStart = starts[0];
+            startTimestamp = DateTime.now();
           }
         }
       }
