@@ -4,12 +4,13 @@ import 'package:fleet_manager/utils/MyAlertDialog.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'package:http/http.dart' as http;
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 class RealTimeStatusWidget extends StatefulWidget {
 
+  final String url;
 
-  RealTimeStatusWidget();
+  RealTimeStatusWidget({required this.url});
 
   @override
   _RealTimeStatusWidgetState createState() => _RealTimeStatusWidgetState();
@@ -17,41 +18,14 @@ class RealTimeStatusWidget extends StatefulWidget {
 
 class _RealTimeStatusWidgetState extends State<RealTimeStatusWidget> {
 
-  // late WebSocketChannel _channel;
+  late WebSocketChannel _channel;
   bool _isConnected = false;
   Timer? _reconnectTimer;
 
   @override
   void initState() {
     super.initState();
-    startPolling();
-    // _initializeWebSocket();
-  }
-
-  void setConnected(){
-    setState(() {
-      _isConnected = true;
-    });
-  }
-
-  void resetConnected(){
-    setState(() {
-      _isConnected = false;
-    });
-  }
-
-  void startPolling() async {
-
-    Timer.periodic(Duration(seconds: 1), (timer) async {
-
-      final response = await http.get(Uri.parse('http://localhost:8000/tasks'));
-
-      if (response.statusCode == 200) {
-        setConnected();
-      } else {
-        resetConnected();
-      }
-    });
+    _initializeWebSocket();
   }
 
   Future showAlertDialog(BuildContext context) {
@@ -61,37 +35,39 @@ class _RealTimeStatusWidgetState extends State<RealTimeStatusWidget> {
     );
   }
 
-  // void _initializeWebSocket() {
-  //   try {
-  //     _channel = WebSocketChannel.connect(Uri.parse(widget.url));
-  //     _isConnected = true;
+  void _initializeWebSocket() {
+    try {
+      _channel = WebSocketChannel.connect(Uri.parse(widget.url));
+      _isConnected = true;
 
-  //     _channel.stream.listen(
-  //       (message) {},
-  //       onDone: () {
-  //         showAlertDialog(context);
-  //         setState(() {
-  //           _isConnected = false;
-  //         });
-  //       },
-  //       onError: (error) {
-  //         showAlertDialog(context);
-  //         setState(() {
-  //           _isConnected = false;
-  //         });
-  //       },
-  //     );
-  //   } catch (e) {
-  //     setState(() {
-  //       _isConnected = false;
-  //     });
-  //   }
-  // }
+      _channel.stream.listen(
+        (message) {
+          // TODO: Handle incoming messages if needed
+        },
+        onDone: () {
+          showAlertDialog(context);
+          setState(() {
+            _isConnected = false;
+          });
+        },
+        onError: (error) {
+          showAlertDialog(context);
+          setState(() {
+            _isConnected = false;
+          });
+        },
+      );
+    } catch (e) {
+      setState(() {
+        _isConnected = false;
+      });
+    }
+  }
 
 
   @override
   void dispose() {
-    // _channel.sink.close();
+    _channel.sink.close();
     _reconnectTimer?.cancel();
     super.dispose();
   }
