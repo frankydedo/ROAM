@@ -44,15 +44,30 @@ class _RealTimeStatusWidgetState extends State<RealTimeStatusWidget> {
 
     Timer.periodic(Duration(seconds: 1), (timer) async {
 
-      final response = await http.get(Uri.parse('http://localhost:8000'));
+      if(_isConnected){
+        try{
+          final response = await http.get(Uri.parse('http://localhost:8000/tasks'));
 
-      if (response.statusCode == 200) {
-        setConnected();
-        print("all good");
-      } else {
-        resetConnected();
-        print("not anymore");
-        showAlertDialog(context);
+          if (response.statusCode == 200) {
+            setConnected();
+            print("all good");
+          }
+        }catch (e){
+          print("not anymore");
+          showAlertDialog(context);
+          resetConnected();
+        }
+      }else{
+        try{
+          final response = await http.get(Uri.parse('http://localhost:8000/tasks'));
+
+          if (response.statusCode == 200) {
+            setConnected();
+            print("all good");
+          }
+        }catch (e){
+          print("not anymore");
+        }
       }
     });
   }
@@ -63,34 +78,6 @@ class _RealTimeStatusWidgetState extends State<RealTimeStatusWidget> {
       builder: (context) => MyAlertDialog(alert_msg: "Ristabilire la connessione e riavviare l'app."),
     );
   }
-
-  // void _initializeWebSocket() {
-  //   try {
-  //     _channel = WebSocketChannel.connect(Uri.parse(widget.url));
-  //     _isConnected = true;
-
-  //     _channel.stream.listen(
-  //       (message) {},
-  //       onDone: () {
-  //         showAlertDialog(context);
-  //         setState(() {
-  //           _isConnected = false;
-  //         });
-  //       },
-  //       onError: (error) {
-  //         showAlertDialog(context);
-  //         setState(() {
-  //           _isConnected = false;
-  //         });
-  //       },
-  //     );
-  //   } catch (e) {
-  //     setState(() {
-  //       _isConnected = false;
-  //     });
-  //   }
-  // }
-
 
   @override
   void dispose() {

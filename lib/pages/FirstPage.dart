@@ -210,21 +210,22 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
         throw Exception('Failed to load robots');
       }
     } catch (e) {
-      throw Exception('Error: ${e.toString()}');
+      // print('Error: ${e.toString()}');
+      return <Robot>[];
     }
   }
 
   Future<List<Task>> getTasks() async {
     try {
       final response = await http.get(Uri.parse('http://localhost:8000/tasks'));
-      // final response = await http.get(Uri.parse('$apiServerAddress/task_list'));
       if (response.statusCode == 200) {
         return parseTasks(response.body);
       } else {
         throw Exception('Failed to load tasks');
       }
     } catch (e) {
-      throw Exception('Error: ${e.toString()}');
+      // print('Error: ${e.toString()}');
+      return <Task>[];
     }
   }
 
@@ -241,7 +242,7 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
         throw Exception('Failed to load dashboard config');
       }
     } catch (e) {
-      throw Exception('Error: ${e.toString()}');
+      return "-";
     }
   }
 
