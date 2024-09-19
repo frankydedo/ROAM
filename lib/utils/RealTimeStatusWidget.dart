@@ -75,7 +75,7 @@ class _RealTimeStatusWidgetState extends State<RealTimeStatusWidget> {
   Future showAlertDialog(BuildContext context) {
     return showDialog(
       context: context,
-      builder: (context) => MyAlertDialog(alert_msg: "Ristabilire la connessione e riavviare l'app."),
+      builder: (context) => MyAlertDialog(alert_msg: "Ristabilire la connessione."),
     );
   }
 
