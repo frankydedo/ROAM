@@ -36,8 +36,8 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
   late TabController _tabController;
   int _selectedTabIndex = 0;
   String? highlightedTaskRobotName;
-  final String apiServerAddress = "http://localhost:8083";
-  // final webSocketService = WebSocketService('ws://localhost:8000/_internal');
+  final String apiServerAddress = "http://192.168.1.5:8083";
+  final String apiServerAddress_tasks = "http://192.168.1.5:8000";
   int? millisecondsSinceStart = null;
   late List<String> validTask;
 
@@ -202,7 +202,6 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
   
   Future<List<Robot>> getRobots() async {
     try {
-      // final response = await http.get(Uri.parse('http://localhost:8000/robot'));
       final response = await http.get(Uri.parse('$apiServerAddress/robot_list'));
       if (response.statusCode == 200) {
         return parseRobots(response.body);
@@ -217,14 +216,13 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
 
   Future<List<Task>> getTasks() async {
     try {
-      final response = await http.get(Uri.parse('http://localhost:8000/tasks'));
+      final response = await http.get(Uri.parse('$apiServerAddress_tasks/tasks'));
       if (response.statusCode == 200) {
         return parseTasks(response.body);
       } else {
         throw Exception('Failed to load tasks');
       }
     } catch (e) {
-      // print('Error: ${e.toString()}');
       return <Task>[];
     }
   }

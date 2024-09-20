@@ -17,7 +17,7 @@ class RealTimeStatusWidget extends StatefulWidget {
 
 class _RealTimeStatusWidgetState extends State<RealTimeStatusWidget> {
 
-  // late WebSocketChannel _channel;
+  final String apiServerAddress_tasks = "http://192.168.1.5:8000";
   bool _isConnected = false;
   Timer? _reconnectTimer;
 
@@ -25,7 +25,6 @@ class _RealTimeStatusWidgetState extends State<RealTimeStatusWidget> {
   void initState() {
     super.initState();
     startPolling();
-    // _initializeWebSocket();
   }
 
   void setConnected(){
@@ -46,7 +45,7 @@ class _RealTimeStatusWidgetState extends State<RealTimeStatusWidget> {
 
       if(_isConnected){
         try{
-          final response = await http.get(Uri.parse('http://localhost:8000/tasks'));
+          final response = await http.get(Uri.parse('$apiServerAddress_tasks/tasks'));
 
           if (response.statusCode == 200) {
             setConnected();
@@ -59,7 +58,7 @@ class _RealTimeStatusWidgetState extends State<RealTimeStatusWidget> {
         }
       }else{
         try{
-          final response = await http.get(Uri.parse('http://localhost:8000/tasks'));
+          final response = await http.get(Uri.parse('$apiServerAddress_tasks/tasks'));
 
           if (response.statusCode == 200) {
             setConnected();
@@ -81,7 +80,6 @@ class _RealTimeStatusWidgetState extends State<RealTimeStatusWidget> {
 
   @override
   void dispose() {
-    // _channel.sink.close();
     _reconnectTimer?.cancel();
     super.dispose();
   }
