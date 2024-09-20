@@ -3,8 +3,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
-
-// import 'package:fleet_manager/api/WebSocketService.dart';
 import 'package:fleet_manager/models/Robot.dart';
 import 'package:fleet_manager/models/Task.dart';
 import 'package:fleet_manager/providers/ColorsProvider.dart';
@@ -37,7 +35,7 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
   int _selectedTabIndex = 0;
   String? highlightedTaskRobotName;
   final String apiServerAddress = "http://192.168.1.5:8083";
-  final String apiServerAddress_tasks = "http://192.168.1.5:8000";
+  final String apiServerAddress_tasks = "http://192.168.1.5:8082";
   int? millisecondsSinceStart = null;
   late List<String> validTask;
 
