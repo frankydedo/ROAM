@@ -209,7 +209,6 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
         throw Exception('Failed to load robots');
       }
     } catch (e) {
-      // print('Error: ${e.toString()}');
       return <Robot>[];
     }
   }
@@ -218,11 +217,14 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
     try {
       final response = await http.get(Uri.parse('$apiServerAddress_tasks/tasks'));
       if (response.statusCode == 200) {
+        print(response.body.toString());
         return parseTasks(response.body);
       } else {
+        print("MHHH");
         throw Exception('Failed to load tasks');
       }
     } catch (e) {
+      print("MHHH");
       return <Task>[];
     }
   }

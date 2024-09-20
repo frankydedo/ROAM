@@ -17,7 +17,7 @@ class RealTimeStatusWidget extends StatefulWidget {
 
 class _RealTimeStatusWidgetState extends State<RealTimeStatusWidget> {
 
-  final String apiServerAddress_tasks = "http://192.168.1.5:8000";
+  final String apiServerAddress = "http://192.168.1.5:8083";
   bool _isConnected = false;
   Timer? _reconnectTimer;
 
@@ -45,20 +45,18 @@ class _RealTimeStatusWidgetState extends State<RealTimeStatusWidget> {
 
       if(_isConnected){
         try{
-          final response = await http.get(Uri.parse('$apiServerAddress_tasks/tasks'));
+          final response = await http.get(Uri.parse('$apiServerAddress/dashboard_config'));
 
           if (response.statusCode == 200) {
             setConnected();
-            print("all good");
           }
         }catch (e){
-          print("not anymore");
           showAlertDialog(context);
           resetConnected();
         }
       }else{
         try{
-          final response = await http.get(Uri.parse('$apiServerAddress_tasks/tasks'));
+          final response = await http.get(Uri.parse('$apiServerAddress/dashboard_config'));
 
           if (response.statusCode == 200) {
             setConnected();

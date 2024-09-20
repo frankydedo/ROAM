@@ -33,7 +33,7 @@ class _NewTaskDialogState extends State<NewTaskDialog> with SingleTickerProvider
   String? _selectedStartingSpot;
   String? _selectedEndingSpot;
 
-  final String apiServerAddress = "http://localhost:8083";
+  final String apiServerAddress = "http://192.168.1.5:8083";
   
   final _jsonFormKey = GlobalKey<FormState>();
   final _formFormKey = GlobalKey<FormState>();
