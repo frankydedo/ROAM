@@ -216,7 +216,6 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
     try {
       final response = await http.get(Uri.parse(addressProvider.apiServerAddress_tasks + '/tasks'));
       if (response.statusCode == 200) {
-        print(response.body.toString());
         return parseTasks(response.body);
       } else {
         throw Exception('Failed to load tasks');
@@ -402,7 +401,6 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
                           // },
                           onPressed: (){
                             Navigator.pushNamed(context, '/settingspage');
-                            print(addressModel.apiServerAddress);
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: colorsModel.tileBackGroudColor

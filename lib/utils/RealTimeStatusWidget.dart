@@ -16,7 +16,7 @@ class RealTimeStatusWidget extends StatefulWidget {
 
 class _RealTimeStatusWidgetState extends State<RealTimeStatusWidget> {
 
-  bool _isConnected = false;
+  late bool _isConnected;
   Timer? _reconnectTimer;
 
   @override
