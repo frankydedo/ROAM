@@ -294,7 +294,7 @@ class _TaskTileState extends State<TaskTile> with SingleTickerProviderStateMixin
                                         try {
                                           final response = await http.post(
                                             // Uri.parse('$apiServerAddress/cancel_task'),
-                                            Uri.parse(addressModel.apiServerAddress + '/tasks/cancel_task'),
+                                            Uri.parse(addressModel.apiServerAddress_tasks + '/tasks/cancel_task'),
                                             headers: {
                                               "Content-Type": "application/json; charset=UTF-8",
                                             },
