@@ -1,6 +1,8 @@
 // ignore_for_file: prefer_const_constructors, use_build_context_synchronously
 
 import 'package:fleet_manager/pages/FirstPage.dart';
+import 'package:fleet_manager/pages/SettingsPage.dart';
+import 'package:fleet_manager/providers/AddressProvider.dart';
 import 'package:fleet_manager/providers/ColorsProvider.dart';
 import 'package:fleet_manager/providers/ProjectProvider.dart';
 import 'package:flutter/material.dart';
@@ -13,6 +15,7 @@ void main() {
       providers: [
         ChangeNotifierProvider(create: (_) => ColorsProvider()),
         ChangeNotifierProvider(create: (_) => ProjectProvider()),
+        ChangeNotifierProvider(create: (_) => AddressProvider()),
       ],
       child: MyApp(),
     ),
@@ -80,6 +83,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver{
       home: FirstPage(),
       routes: {
           '/firstpage': (context) => FirstPage(),
+          '/settingspage': (context) => SettingsPage(),
       },
     );
   }

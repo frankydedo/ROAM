@@ -4,6 +4,7 @@ import 'dart:convert';
 
 import 'package:fleet_manager/models/Project.dart';
 import 'package:fleet_manager/models/Task.dart';
+import 'package:fleet_manager/providers/AddressProvider.dart';
 import 'package:fleet_manager/providers/ColorsProvider.dart';
 import 'package:fleet_manager/providers/ProjectProvider.dart';
 import 'package:fleet_manager/utils/ConfermaDialog.dart';
@@ -34,7 +35,6 @@ class TaskTile extends StatefulWidget {
 
 class _TaskTileState extends State<TaskTile> with SingleTickerProviderStateMixin {
 
-  final String apiServerAddress = "http://localhost:8083";
   bool isExpanded = false;
 
   Color coloreDaStato(String state) {
@@ -80,8 +80,8 @@ class _TaskTileState extends State<TaskTile> with SingleTickerProviderStateMixin
 
   @override
   Widget build(BuildContext context) {
-    return Consumer2<ColorsProvider, ProjectProvider>(
-      builder: (context, colorsModel, projectsModel, _) {
+    return Consumer3<ColorsProvider, ProjectProvider, AddressProvider>(
+      builder: (context, colorsModel, projectsModel, addressModel, _) {
         return Padding(
           padding: const EdgeInsets.fromLTRB(12,12,0,12),
           child: GestureDetector(
@@ -294,7 +294,7 @@ class _TaskTileState extends State<TaskTile> with SingleTickerProviderStateMixin
                                         try {
                                           final response = await http.post(
                                             // Uri.parse('$apiServerAddress/cancel_task'),
-                                            Uri.parse('http://localhost:8000/tasks/cancel_task'),
+                                            Uri.parse(addressModel.apiServerAddress + '/tasks/cancel_task'),
                                             headers: {
                                               "Content-Type": "application/json; charset=UTF-8",
                                             },

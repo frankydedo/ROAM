@@ -3,6 +3,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:fleet_manager/providers/AddressProvider.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -32,8 +33,6 @@ class _NewTaskDialogState extends State<NewTaskDialog> with SingleTickerProvider
   String? _selectedPriority;
   String? _selectedStartingSpot;
   String? _selectedEndingSpot;
-
-  final String apiServerAddress = "http://192.168.1.5:8083";
   
   final _jsonFormKey = GlobalKey<FormState>();
   final _formFormKey = GlobalKey<FormState>();
@@ -88,8 +87,9 @@ class _NewTaskDialogState extends State<NewTaskDialog> with SingleTickerProvider
   }
 
   Future<List<String>> getValidTasks() async {
+    final addressProvider = Provider.of<AddressProvider>(context, listen: false);
     try {
-      final response = await http.get(Uri.parse('$apiServerAddress/dashboard_config'));
+      final response = await http.get(Uri.parse(addressProvider.apiServerAddress + '/dashboard_config'));
 
       if (response.statusCode == 200) {
         Map<String, dynamic> jsonMap = json.decode(response.body);
@@ -103,9 +103,10 @@ class _NewTaskDialogState extends State<NewTaskDialog> with SingleTickerProvider
   }
 
   Future<List<String>> getPlaces() async {
+    final addressProvider = Provider.of<AddressProvider>(context, listen: false);
     try {
-      final response = await http.get(Uri.parse('$apiServerAddress/dashboard_config'));
-
+      final response = await http.get(Uri.parse(addressProvider.apiServerAddress + '/dashboard_config'));
+      
       if (response.statusCode == 200) {
         Map<String, dynamic> jsonMap = json.decode(response.body);
         return List<String>.from(jsonMap['task']['Loop']['places']);
@@ -406,12 +407,15 @@ class _NewTaskDialogState extends State<NewTaskDialog> with SingleTickerProvider
                                                     borderRadius: BorderRadius.circular(15),
                                                   ),
                                                 ),
-                                                child: Text(
-                                                  "Seleziona data e ora",
-                                                  style: TextStyle(
-                                                    color: Colors.white,
-                                                    fontSize: 14,
-                                                    fontWeight: FontWeight.normal,
+                                                child: Padding(
+                                                  padding: const EdgeInsets.fromLTRB(8,0,8,0),
+                                                  child: Text(
+                                                    "Seleziona data e ora",
+                                                    style: GoogleFonts.encodeSans(
+                                                      color: Colors.white,
+                                                      fontSize: 14,
+                                                      fontWeight: FontWeight.w600,
+                                                    ),
                                                   ),
                                                 ),
                                               ),
@@ -610,7 +614,6 @@ class _NewTaskDialogState extends State<NewTaskDialog> with SingleTickerProvider
                                 child: Column(
                                   children: [
                                     SizedBox(
-                                      height: 300,
                                       child: Padding(
                                         padding: const EdgeInsets.all(8.0),
                                         child: TextFormField(
@@ -641,7 +644,7 @@ class _NewTaskDialogState extends State<NewTaskDialog> with SingleTickerProvider
                                               borderSide: BorderSide(color: colorsModel.coloreSecondario),
                                             ),
                                           ),
-                                          minLines: 10,
+                                          minLines: 5,
                                           maxLines: null,
                                         ),
                                       ),
@@ -649,7 +652,14 @@ class _NewTaskDialogState extends State<NewTaskDialog> with SingleTickerProvider
                                     ElevatedButton.icon(
                                       onPressed: pickFile,
                                       icon: Icon(Icons.attach_file),
-                                      label: Text("Scegli file"),
+                                      label: Text(
+                                        "Scegli file",
+                                        style: GoogleFonts.encodeSans(
+                                          color: Colors.white,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
                                       style: ElevatedButton.styleFrom(
                                         foregroundColor: Colors.white,
                                         backgroundColor: colorsModel.coloreSecondario,
@@ -744,6 +754,7 @@ class _NewTaskDialogState extends State<NewTaskDialog> with SingleTickerProvider
                       ),
                     ],
                   ),
+                  SizedBox(height: 10)
                 ],
               ),
             ),

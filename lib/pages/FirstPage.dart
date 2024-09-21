@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:fleet_manager/models/Robot.dart';
 import 'package:fleet_manager/models/Task.dart';
+import 'package:fleet_manager/providers/AddressProvider.dart';
 import 'package:fleet_manager/providers/ColorsProvider.dart';
 import 'package:fleet_manager/providers/ProjectProvider.dart';
 import 'package:fleet_manager/utils/MySnackBar.dart';
@@ -34,8 +35,6 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
   late TabController _tabController;
   int _selectedTabIndex = 0;
   String? highlightedTaskRobotName;
-  final String apiServerAddress = "http://192.168.1.5:8083";
-  final String apiServerAddress_tasks = "http://192.168.1.5:8082";
   int? millisecondsSinceStart = null;
   late List<String> validTask;
 
@@ -199,8 +198,9 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
   }
   
   Future<List<Robot>> getRobots() async {
+    final addressProvider = Provider.of<AddressProvider>(context, listen: false);
     try {
-      final response = await http.get(Uri.parse('$apiServerAddress/robot_list'));
+      final response = await http.get(Uri.parse(addressProvider.apiServerAddress + '/robot_list'));
       if (response.statusCode == 200) {
         return parseRobots(response.body);
       } else {
@@ -212,25 +212,25 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
   }
 
   Future<List<Task>> getTasks() async {
+    final addressProvider = Provider.of<AddressProvider>(context, listen: false);
     try {
-      final response = await http.get(Uri.parse('$apiServerAddress_tasks/tasks'));
+      final response = await http.get(Uri.parse(addressProvider.apiServerAddress_tasks + '/tasks'));
       if (response.statusCode == 200) {
         print(response.body.toString());
         return parseTasks(response.body);
       } else {
-        print("MHHH");
         throw Exception('Failed to load tasks');
       }
     } catch (e) {
-      print("MHHH");
       return <Task>[];
     }
   }
 
 
   Future<String> getProjectName() async {
+    final addressProvider = Provider.of<AddressProvider>(context, listen: false);
     try {
-      final response = await http.get(Uri.parse('$apiServerAddress/dashboard_config'));
+      final response = await http.get(Uri.parse(addressProvider.apiServerAddress + '/dashboard_config'));
       
       if (response.statusCode == 200) {
         Map<String, dynamic> jsonMap = json.decode(response.body);
@@ -246,7 +246,8 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
 
 
   Future<dynamic> submitRequest(Map<String, dynamic> request) async {
-    final url = Uri.parse('$apiServerAddress/submit_task');
+    final addressProvider = Provider.of<AddressProvider>(context, listen: false);
+    final url = Uri.parse(addressProvider.apiServerAddress + '/submit_task');
 
     try {
       final response = await http.post(
@@ -349,8 +350,8 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
 
   @override
   Widget build(BuildContext context) {
-    return Consumer2<ColorsProvider, ProjectProvider>(
-      builder: (context, colorsModel, projectsModel, _) {
+    return Consumer3<ColorsProvider, ProjectProvider, AddressProvider>(
+      builder: (context, colorsModel, projectsModel, addressModel, _) {
 
         // Project currentProject = projectsModel.projects[_selectedTabIndex];
 
@@ -378,7 +379,45 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
                 Row(
                   children: [
 
-                    RealTimeStatusWidget(),
+                    // RealTimeStatusWidget(),
+
+                    // settings button
+
+                    Stack(
+                      children:[
+
+                        ElevatedButton(
+                          // onPressed: () async{
+                          //   String? tema = await showSelettoreTemaDialog(context);
+                          //   if(tema == null){
+                          //     return;
+                          //   }
+                          //   if (tema == "Sistema Operativo"){
+                          //     colorsModel.setTemaAttualeSistemaOperativo(context);
+                          //     setState(() {});
+                          //   }else{
+                          //     colorsModel.setTemaAttualeChiaroScuro(context, tema);
+                          //     setState(() {});
+                          //   }
+                          // },
+                          onPressed: (){
+                            Navigator.pushNamed(context, '/settingspage');
+                            print(addressModel.apiServerAddress);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: colorsModel.tileBackGroudColor
+                          ),
+                          child: Icon(CupertinoIcons.settings_solid, color: colorsModel.coloreSecondario, size: 30)
+                        ),
+
+                        Positioned(
+                          bottom: 16,
+                          left: 45,
+                          child: RealTimeStatusWidget()
+                        )
+
+                      ]
+                    ),
 
                     SizedBox(width: 24),
 
@@ -394,7 +433,8 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
                       style: GoogleFonts.encodeSans(
                           color: colorsModel.coloreTitoli,
                           fontSize: 20,
-                          fontWeight: FontWeight.w600),
+                          fontWeight: FontWeight.w600
+                        ),
                     ),
 
                     Spacer(),
@@ -441,27 +481,27 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
                           )),
                     ),
 
-                    // tema button
+                    // settings button
 
-                    ElevatedButton(
-                      onPressed: () async{
-                        String? tema = await showSelettoreTemaDialog(context);
-                        if(tema == null){
-                          return;
-                        }
-                        if (tema == "Sistema Operativo"){
-                          colorsModel.setTemaAttualeSistemaOperativo(context);
-                          setState(() {});
-                        }else{
-                          colorsModel.setTemaAttualeChiaroScuro(context, tema);
-                          setState(() {});
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: colorsModel.tileBackGroudColor
-                      ),
-                      child: Icon(CupertinoIcons.settings_solid, color: colorsModel.coloreSecondario, size: 30)
-                    )
+                    // ElevatedButton(
+                    //   onPressed: () async{
+                    //     String? tema = await showSelettoreTemaDialog(context);
+                    //     if(tema == null){
+                    //       return;
+                    //     }
+                    //     if (tema == "Sistema Operativo"){
+                    //       colorsModel.setTemaAttualeSistemaOperativo(context);
+                    //       setState(() {});
+                    //     }else{
+                    //       colorsModel.setTemaAttualeChiaroScuro(context, tema);
+                    //       setState(() {});
+                    //     }
+                    //   },
+                    //   style: ElevatedButton.styleFrom(
+                    //     backgroundColor: colorsModel.tileBackGroudColor
+                    //   ),
+                    //   child: Icon(CupertinoIcons.settings_solid, color: colorsModel.coloreSecondario, size: 30)
+                    // )
                   ],
                 ),
               ],

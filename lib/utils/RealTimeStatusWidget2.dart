@@ -5,16 +5,16 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 
-class RealTimeStatusWidget extends StatefulWidget {
+class RealTimeStatusWidget2 extends StatefulWidget {
 
 
-  RealTimeStatusWidget();
+  RealTimeStatusWidget2();
 
   @override
-  _RealTimeStatusWidgetState createState() => _RealTimeStatusWidgetState();
+  _RealTimeStatusWidget2State createState() => _RealTimeStatusWidget2State();
 }
 
-class _RealTimeStatusWidgetState extends State<RealTimeStatusWidget> {
+class _RealTimeStatusWidget2State extends State<RealTimeStatusWidget2> {
 
   bool _isConnected = false;
   Timer? _reconnectTimer;
@@ -44,6 +44,7 @@ class _RealTimeStatusWidgetState extends State<RealTimeStatusWidget> {
       final addressProvider = Provider.of<AddressProvider>(context, listen: false);
 
       if(_isConnected){
+        
         try{
           final response = await http.get(Uri.parse(addressProvider.apiServerAddress + '/dashboard_config'));
 
@@ -86,8 +87,12 @@ class _RealTimeStatusWidgetState extends State<RealTimeStatusWidget> {
       padding: const EdgeInsets.all(8.0),
       child: Row(
         children: [
-          if (!_isConnected)
+
+          !_isConnected ? 
+
           Icon(Icons.error_rounded, color: Colors.red)
+          :
+          Icon(Icons.check_circle, color: Colors.green)
         ]
       ),
     );
