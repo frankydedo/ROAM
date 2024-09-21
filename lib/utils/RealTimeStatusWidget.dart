@@ -20,8 +20,21 @@ class _RealTimeStatusWidgetState extends State<RealTimeStatusWidget> {
   Timer? _reconnectTimer;
 
   @override
-  void initState() {
+  void initState() async{
     super.initState();
+    final addressProvider = Provider.of<AddressProvider>(context, listen: false);
+
+    try{
+      final response = await http.get(Uri.parse(addressProvider.apiServerAddress + '/dashboard_config'));
+
+      if (response.statusCode == 200) {
+        setConnected();
+      }
+    }catch (e){
+      showAlertDialog(context);
+      resetConnected();
+    }
+
     startPolling();
   }
 
