@@ -8,6 +8,7 @@ import 'package:fleet_manager/models/Task.dart';
 import 'package:fleet_manager/providers/AddressProvider.dart';
 import 'package:fleet_manager/providers/ColorsProvider.dart';
 import 'package:fleet_manager/providers/ProjectProvider.dart';
+import 'package:fleet_manager/utils/MyAlertDialog.dart';
 import 'package:fleet_manager/utils/MySnackBar.dart';
 import 'package:fleet_manager/utils/NewTaskDialog.dart';
 import 'package:fleet_manager/utils/RealTimeStatusWidget.dart';
@@ -44,6 +45,8 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
   bool showQueued = true;
   bool showCanceled = true;
   bool showFailed = true;
+
+  bool alertCanBeShown = true;
 
   @override
   void initState() {
@@ -133,6 +136,13 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
     return showDialog(
       context: context,
       builder: (context) => NewTaskDialog(),
+    );
+  }
+
+  Future showAlertDialog(BuildContext context) {
+    return showDialog(
+      context: context,
+      builder: (context) => MyAlertDialog(alert_msg: "Ristabilire la connessione."),
     );
   }
 
@@ -232,6 +242,7 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
       final response = await http.get(Uri.parse(addressProvider.apiServerAddress + '/dashboard_config'));
       
       if (response.statusCode == 200) {
+        alertCanBeShown = true;
         Map<String, dynamic> jsonMap = json.decode(response.body);
         validTask = List<String>.from(jsonMap['valid_task']);
         return jsonMap['world_name'] as String;
@@ -239,6 +250,12 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
         throw Exception('Failed to load dashboard config');
       }
     } catch (e) {
+      if (alertCanBeShown){
+        showAlertDialog(context);
+        setState(() {
+          alertCanBeShown = false;
+        });
+      }
       return "-";
     }
   }

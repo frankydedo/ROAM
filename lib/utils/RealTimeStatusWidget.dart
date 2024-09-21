@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:fleet_manager/providers/AddressProvider.dart';
-import 'package:fleet_manager/utils/MyAlertDialog.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
@@ -31,7 +30,6 @@ class _RealTimeStatusWidgetState extends State<RealTimeStatusWidget> {
         setConnected();
       }
     }catch (e){
-      showAlertDialog(context);
       resetConnected();
     }
 
@@ -64,7 +62,6 @@ class _RealTimeStatusWidgetState extends State<RealTimeStatusWidget> {
             setConnected();
           }
         }catch (e){
-          showAlertDialog(context);
           resetConnected();
         }
       }else{
@@ -78,13 +75,6 @@ class _RealTimeStatusWidgetState extends State<RealTimeStatusWidget> {
         }
       }
     });
-  }
-
-  Future showAlertDialog(BuildContext context) {
-    return showDialog(
-      context: context,
-      builder: (context) => MyAlertDialog(alert_msg: "Ristabilire la connessione."),
-    );
   }
 
   @override

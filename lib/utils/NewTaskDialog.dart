@@ -227,383 +227,385 @@ class _NewTaskDialogState extends State<NewTaskDialog> with SingleTickerProvider
                             children: [
 
                               // vista per form
-                              Form(
-                                key: _formFormKey,
-                                child: Column(
-                                  children: [
-                                    SizedBox(
-                                      width: screenWidth * 0.5,
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: DropdownButtonFormField<String>(
-                                          validator: (value) {
-                                            if (value == null) {
-                                              return "Scegliere il task da eseguire";
-                                            }
-                                            return null;
-                                          },
-                                          value: _selectedTask,
-                                          style: TextStyle(
-                                            color: Colors.black,
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.normal,
-                                          ),
-                                          decoration: InputDecoration(
-                                            hintText: "Seleziona un task",
-                                            hintStyle: TextStyle(color: Colors.grey),
-                                            border: OutlineInputBorder(
-                                              borderRadius: BorderRadius.circular(15),
+                              SingleChildScrollView(
+                                child: Form(
+                                  key: _formFormKey,
+                                  child: Column(
+                                    children: [
+                                      SizedBox(
+                                        width: screenWidth * 0.5,
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: DropdownButtonFormField<String>(
+                                            validator: (value) {
+                                              if (value == null) {
+                                                return "Scegliere il task da eseguire";
+                                              }
+                                              return null;
+                                            },
+                                            value: _selectedTask,
+                                            style: TextStyle(
+                                              color: Colors.black,
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.normal,
                                             ),
-                                            focusedBorder: OutlineInputBorder(
-                                              borderRadius: BorderRadius.circular(15),
-                                              borderSide: BorderSide(color: colorsModel.coloreSecondario),
-                                            ),
-                                          ),
-                                          onChanged: (String? newValue) {
-                                            setState(() {
-                                              _selectedTask = newValue;
-                                            });
-                                          },
-                                          items: validTasks.map((String task) {
-                                            return DropdownMenuItem<String>(
-                                              value: task,
-                                              child: Text(task),
-                                            );
-                                          }).toList(),
-                                        ),
-                                      ),
-                                    ),
-
-                                    SizedBox(
-                                      width: screenWidth * 0.5,
-                                      child: Row(
-                                        children: [
-                                          SizedBox(
-                                            width: screenWidth * 0.32,
-                                            child: Padding(
-                                              padding: const EdgeInsets.all(8.0),
-                                              child: TextFormField(
-                                                keyboardType: TextInputType.number,
-                                                controller: _minutiController,
-                                                cursorColor: colorsModel.coloreSecondario,
-                                                textInputAction: TextInputAction.done,
-                                                textAlign: TextAlign.start,
-                                                textAlignVertical: TextAlignVertical.top,
-                                                validator: (value) {
-                                                  if (value == null || value.isEmpty) {
-                                                    return "Inserire i minuti";
-                                                  }
-                                                  if (int.tryParse(value) == null || int.parse(value) < 0) {
-                                                    return "Inserire un valore positivo";
-                                                  }
-                                                  return null;
-                                                },
-                                                style: TextStyle(
-                                                  color: Colors.black,
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.normal,
-                                                ),
-                                                decoration: InputDecoration(
-                                                  hintText: "Minuti da ora",
-                                                  hintStyle: TextStyle(color: Colors.grey),
-                                                  border: OutlineInputBorder(
-                                                    borderRadius: BorderRadius.circular(15),
-                                                  ),
-                                                  focusedBorder: OutlineInputBorder(
-                                                    borderRadius: BorderRadius.circular(15),
-                                                    borderSide: BorderSide(color: colorsModel.coloreSecondario),
-                                                  ),
-                                                ),
+                                            decoration: InputDecoration(
+                                              hintText: "Seleziona un task",
+                                              hintStyle: TextStyle(color: Colors.grey),
+                                              border: OutlineInputBorder(
+                                                borderRadius: BorderRadius.circular(15),
+                                              ),
+                                              focusedBorder: OutlineInputBorder(
+                                                borderRadius: BorderRadius.circular(15),
+                                                borderSide: BorderSide(color: colorsModel.coloreSecondario),
                                               ),
                                             ),
+                                            onChanged: (String? newValue) {
+                                              setState(() {
+                                                _selectedTask = newValue;
+                                              });
+                                            },
+                                            items: validTasks.map((String task) {
+                                              return DropdownMenuItem<String>(
+                                                value: task,
+                                                child: Text(task),
+                                              );
+                                            }).toList(),
                                           ),
-                                          Spacer(),
-                                          Text(
-                                            "OPPURE",
-                                            style: GoogleFonts.encodeSans(
-                                              color: colorsModel.textColor,
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                          Spacer(),
-                                          SizedBox(
-                                            width: screenWidth * 0.12,
-                                            child: Padding(
-                                              padding: const EdgeInsets.all(8.0),
-                                              child: ElevatedButton(
-                                                onPressed: () async {
-                                                  DateTime? pickedDate = await showDatePicker(
-                                                    context: context,
-                                                    initialDate: DateTime.now(),
-                                                    firstDate: DateTime.now(),
-                                                    lastDate: DateTime(2101),
-                                                    builder: (BuildContext context, Widget? child) {
-                                                      return Theme(
-                                                        data: ThemeData(
-                                                          colorScheme: ColorScheme.light(
-                                                            primary: colorsModel.tileBackGroudColor,
-                                                            onPrimary: colorsModel.coloreTitoli,
-                                                            onSurface: colorsModel.textColor,
-                                                            surface: colorsModel.tileBackGroudColor,
-                                                          ),
-                                                          textButtonTheme: TextButtonThemeData(
-                                                            style: TextButton.styleFrom(
-                                                              foregroundColor: colorsModel.coloreSecondario,
-                                                            ),
-                                                          ),
-                                                          dialogBackgroundColor: colorsModel.tileBackGroudColor,
-                                                        ),
-                                                        child: child!,
-                                                      );
-                                                    },
-                                                  );
-
-                                                  if (pickedDate != null) {
-                                                    TimeOfDay? pickedTime = await showTimePicker(
-                                                      context: context,
-                                                      initialTime: TimeOfDay.now(),
-                                                      builder: (BuildContext context, Widget? child) {
-                                                      return Theme(
-                                                        data: ThemeData(
-                                                          colorScheme: ColorScheme.light(
-                                                            primary: colorsModel.tileBackGroudColor, 
-                                                            onPrimary: colorsModel.coloreTitoli, 
-                                                            onSurface: colorsModel.textColor, 
-                                                            surface: colorsModel.tileBackGroudColor, 
-                                                          ),
-                                                          textButtonTheme: TextButtonThemeData(
-                                                            style: TextButton.styleFrom(
-                                                              foregroundColor: colorsModel.coloreSecondario,
-                                                            ),
-                                                          ),
-                                                          dialogBackgroundColor: colorsModel.tileBackGroudColor,
-                                                        ),
-                                                        child: child!,
-                                                      );
-                                                    },
-                                                    );
-
-                                                    if (pickedTime != null) {
-                                                      DateTime finalDateTime = DateTime(
-                                                        pickedDate.year,
-                                                        pickedDate.month,
-                                                        pickedDate.day,
-                                                        pickedTime.hour,
-                                                        pickedTime.minute,
-                                                      );
-
-                                                      int diff = ((finalDateTime.millisecondsSinceEpoch - DateTime.now().millisecondsSinceEpoch) / 60000).round();
-                                                      setState(() {
-                                                        _minutiController.text = diff.toString();
-                                                      });
+                                        ),
+                                      ),
+                                
+                                      SizedBox(
+                                        width: screenWidth * 0.5,
+                                        child: Row(
+                                          children: [
+                                            SizedBox(
+                                              width: screenWidth * 0.32,
+                                              child: Padding(
+                                                padding: const EdgeInsets.all(8.0),
+                                                child: TextFormField(
+                                                  keyboardType: TextInputType.number,
+                                                  controller: _minutiController,
+                                                  cursorColor: colorsModel.coloreSecondario,
+                                                  textInputAction: TextInputAction.done,
+                                                  textAlign: TextAlign.start,
+                                                  textAlignVertical: TextAlignVertical.top,
+                                                  validator: (value) {
+                                                    if (value == null || value.isEmpty) {
+                                                      return "Inserire i minuti";
                                                     }
-                                                  }
-                                                },
-                                                style: ElevatedButton.styleFrom(
-                                                  backgroundColor: colorsModel.coloreSecondario,
-                                                  padding: EdgeInsets.symmetric(vertical: 15),
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius: BorderRadius.circular(15),
+                                                    if (int.tryParse(value) == null || int.parse(value) < 0) {
+                                                      return "Inserire un valore positivo";
+                                                    }
+                                                    return null;
+                                                  },
+                                                  style: TextStyle(
+                                                    color: Colors.black,
+                                                    fontSize: 14,
+                                                    fontWeight: FontWeight.normal,
                                                   ),
-                                                ),
-                                                child: Padding(
-                                                  padding: const EdgeInsets.fromLTRB(8,0,8,0),
-                                                  child: Text(
-                                                    "Seleziona data e ora",
-                                                    style: GoogleFonts.encodeSans(
-                                                      color: Colors.white,
-                                                      fontSize: 14,
-                                                      fontWeight: FontWeight.w600,
+                                                  decoration: InputDecoration(
+                                                    hintText: "Minuti da ora",
+                                                    hintStyle: TextStyle(color: Colors.grey),
+                                                    border: OutlineInputBorder(
+                                                      borderRadius: BorderRadius.circular(15),
+                                                    ),
+                                                    focusedBorder: OutlineInputBorder(
+                                                      borderRadius: BorderRadius.circular(15),
+                                                      borderSide: BorderSide(color: colorsModel.coloreSecondario),
                                                     ),
                                                   ),
                                                 ),
                                               ),
                                             ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-
-                                    SizedBox(
-                                      width: screenWidth * 0.5,
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: DropdownButtonFormField<String>(
-                                          validator: (value) {
-                                            if(value == null){
-                                              return "Sceglere la priorità";
-                                            }
-                                            return null;
-                                          },
-                                          value: _selectedPriority,
-                                          style: TextStyle(
-                                            color: Colors.black,
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.normal,
-                                          ),
-                                          decoration: InputDecoration(
-                                            hintText: "Seleziona una priorità",
-                                            hintStyle: TextStyle(color: Colors.grey),
-                                            border: OutlineInputBorder(
-                                              borderRadius: BorderRadius.circular(15),
+                                            Spacer(),
+                                            Text(
+                                              "OPPURE",
+                                              style: GoogleFonts.encodeSans(
+                                                color: colorsModel.textColor,
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w600,
+                                              ),
                                             ),
-                                            focusedBorder: OutlineInputBorder(
-                                              borderRadius: BorderRadius.circular(15),
-                                              borderSide: BorderSide(color: colorsModel.coloreSecondario),
-                                            ),
-                                          ),
-                                          onChanged: (String? newValue) {
-                                            setState(() {
-                                              _selectedPriority = newValue;
-                                            });
-                                          },
-                                          items: [
-                                            DropdownMenuItem<String>(
-                                              value: "1",
-                                              child: Text("High")
-                                            ),
-                                            DropdownMenuItem(
-                                              value: "0",
-                                              child: Text("Low")
+                                            Spacer(),
+                                            SizedBox(
+                                              width: screenWidth * 0.12,
+                                              child: Padding(
+                                                padding: const EdgeInsets.all(8.0),
+                                                child: ElevatedButton(
+                                                  onPressed: () async {
+                                                    DateTime? pickedDate = await showDatePicker(
+                                                      context: context,
+                                                      initialDate: DateTime.now(),
+                                                      firstDate: DateTime.now(),
+                                                      lastDate: DateTime(2101),
+                                                      builder: (BuildContext context, Widget? child) {
+                                                        return Theme(
+                                                          data: ThemeData(
+                                                            colorScheme: ColorScheme.light(
+                                                              primary: colorsModel.tileBackGroudColor,
+                                                              onPrimary: colorsModel.coloreTitoli,
+                                                              onSurface: colorsModel.textColor,
+                                                              surface: colorsModel.tileBackGroudColor,
+                                                            ),
+                                                            textButtonTheme: TextButtonThemeData(
+                                                              style: TextButton.styleFrom(
+                                                                foregroundColor: colorsModel.coloreSecondario,
+                                                              ),
+                                                            ),
+                                                            dialogBackgroundColor: colorsModel.tileBackGroudColor,
+                                                          ),
+                                                          child: child!,
+                                                        );
+                                                      },
+                                                    );
+                                
+                                                    if (pickedDate != null) {
+                                                      TimeOfDay? pickedTime = await showTimePicker(
+                                                        context: context,
+                                                        initialTime: TimeOfDay.now(),
+                                                        builder: (BuildContext context, Widget? child) {
+                                                        return Theme(
+                                                          data: ThemeData(
+                                                            colorScheme: ColorScheme.light(
+                                                              primary: colorsModel.tileBackGroudColor, 
+                                                              onPrimary: colorsModel.coloreTitoli, 
+                                                              onSurface: colorsModel.textColor, 
+                                                              surface: colorsModel.tileBackGroudColor, 
+                                                            ),
+                                                            textButtonTheme: TextButtonThemeData(
+                                                              style: TextButton.styleFrom(
+                                                                foregroundColor: colorsModel.coloreSecondario,
+                                                              ),
+                                                            ),
+                                                            dialogBackgroundColor: colorsModel.tileBackGroudColor,
+                                                          ),
+                                                          child: child!,
+                                                        );
+                                                      },
+                                                      );
+                                
+                                                      if (pickedTime != null) {
+                                                        DateTime finalDateTime = DateTime(
+                                                          pickedDate.year,
+                                                          pickedDate.month,
+                                                          pickedDate.day,
+                                                          pickedTime.hour,
+                                                          pickedTime.minute,
+                                                        );
+                                
+                                                        int diff = ((finalDateTime.millisecondsSinceEpoch - DateTime.now().millisecondsSinceEpoch) / 60000).round();
+                                                        setState(() {
+                                                          _minutiController.text = diff.toString();
+                                                        });
+                                                      }
+                                                    }
+                                                  },
+                                                  style: ElevatedButton.styleFrom(
+                                                    backgroundColor: colorsModel.coloreSecondario,
+                                                    padding: EdgeInsets.symmetric(vertical: 15),
+                                                    shape: RoundedRectangleBorder(
+                                                      borderRadius: BorderRadius.circular(15),
+                                                    ),
+                                                  ),
+                                                  child: Padding(
+                                                    padding: const EdgeInsets.fromLTRB(8,0,8,0),
+                                                    child: Text(
+                                                      "Seleziona data e ora",
+                                                      style: GoogleFonts.encodeSans(
+                                                        color: Colors.white,
+                                                        fontSize: 14,
+                                                        fontWeight: FontWeight.w600,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
                                             ),
                                           ],
                                         ),
                                       ),
-                                    ),
-
-                                    if (_selectedTask == "Loop")
-
-                                      Column(
-                                        children: [
-                                          SizedBox(
-                                            width: screenWidth * 0.5,
-                                            child: Padding(
-                                              padding: const EdgeInsets.all(8.0),
-                                              child: TextFormField(
-                                                keyboardType: TextInputType.number,
-                                                controller: _loopsController,
-                                                cursorColor: colorsModel.coloreSecondario,
-                                                textInputAction: TextInputAction.done,
-                                                textAlign: TextAlign.start,
-                                                textAlignVertical: TextAlignVertical.top,
-                                                validator: (value) {
-                                                  if (value == null || value.isEmpty) {
-                                                    return "Inserire il numero di loop";
-                                                  }
-                                                  if (int.tryParse(value) == null || int.parse(value) < 0) {
-                                                    return "Inserire un valore positivo";
-                                                  }
-                                                  return null;
-                                                },
-                                                style: TextStyle(
-                                                  color: Colors.black,
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.normal,
-                                                ),
-                                                decoration: InputDecoration(
-                                                  hintText: "Numero di loop",
-                                                  hintStyle: TextStyle(color: Colors.grey),
-                                                  border: OutlineInputBorder(
-                                                    borderRadius: BorderRadius.circular(15),
-                                                  ),
-                                                  focusedBorder: OutlineInputBorder(
-                                                    borderRadius: BorderRadius.circular(15),
-                                                    borderSide: BorderSide(color: colorsModel.coloreSecondario),
-                                                  ),
-                                                ),
+                                
+                                      SizedBox(
+                                        width: screenWidth * 0.5,
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: DropdownButtonFormField<String>(
+                                            validator: (value) {
+                                              if(value == null){
+                                                return "Sceglere la priorità";
+                                              }
+                                              return null;
+                                            },
+                                            value: _selectedPriority,
+                                            style: TextStyle(
+                                              color: Colors.black,
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.normal,
+                                            ),
+                                            decoration: InputDecoration(
+                                              hintText: "Seleziona una priorità",
+                                              hintStyle: TextStyle(color: Colors.grey),
+                                              border: OutlineInputBorder(
+                                                borderRadius: BorderRadius.circular(15),
+                                              ),
+                                              focusedBorder: OutlineInputBorder(
+                                                borderRadius: BorderRadius.circular(15),
+                                                borderSide: BorderSide(color: colorsModel.coloreSecondario),
                                               ),
                                             ),
-                                          ),
-                                          
-                                          SizedBox(
-                                            width: screenWidth * 0.5,
-                                            child: Padding(
-                                              padding: const EdgeInsets.all(8.0),
-                                              child: DropdownButtonFormField<String>(
-                                                validator: (value) {
-                                                  if (value == null) {
-                                                    return "Scegliere il punto di partenza";
-                                                  }
-                                                  return null;
-                                                },
-                                                value: _selectedStartingSpot,
-                                                style: TextStyle(
-                                                  color: Colors.black,
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.normal,
-                                                ),
-                                                decoration: InputDecoration(
-                                                  hintText: "Seleziona un punto di partenza",
-                                                  hintStyle: TextStyle(color: Colors.grey),
-                                                  border: OutlineInputBorder(
-                                                    borderRadius: BorderRadius.circular(15),
-                                                  ),
-                                                  focusedBorder: OutlineInputBorder(
-                                                    borderRadius: BorderRadius.circular(15),
-                                                    borderSide: BorderSide(color: colorsModel.coloreSecondario),
-                                                  ),
-                                                ),
-                                                onChanged: (String? newValue) {
-                                                  setState(() {
-                                                    _selectedStartingSpot = newValue;
-                                                  });
-                                                },
-                                                items: places.map((String place) {
-                                                  return DropdownMenuItem<String>(
-                                                    value: place,
-                                                    child: Text(place),
-                                                  );
-                                                }).toList(),
+                                            onChanged: (String? newValue) {
+                                              setState(() {
+                                                _selectedPriority = newValue;
+                                              });
+                                            },
+                                            items: [
+                                              DropdownMenuItem<String>(
+                                                value: "1",
+                                                child: Text("High")
                                               ),
-                                            ),
-                                          ),
-                                          
-                                          SizedBox(
-                                            width: screenWidth * 0.5,
-                                            child: Padding(
-                                              padding: const EdgeInsets.all(8.0),
-                                              child: DropdownButtonFormField<String>(
-                                                validator: (value) {
-                                                  if (value == null) {
-                                                    return "Scegliere il punto di arrivo";
-                                                  }
-                                                  return null;
-                                                },
-                                                value: _selectedEndingSpot,
-                                                style: TextStyle(
-                                                  color: Colors.black,
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.normal,
-                                                ),
-                                                decoration: InputDecoration(
-                                                  hintText: "Seleziona un punto di arrivo",
-                                                  hintStyle: TextStyle(color: Colors.grey),
-                                                  border: OutlineInputBorder(
-                                                    borderRadius: BorderRadius.circular(15),
-                                                  ),
-                                                  focusedBorder: OutlineInputBorder(
-                                                    borderRadius: BorderRadius.circular(15),
-                                                    borderSide: BorderSide(color: colorsModel.coloreSecondario),
-                                                  ),
-                                                ),
-                                                onChanged: (String? newValue) {
-                                                  setState(() {
-                                                    _selectedEndingSpot = newValue;
-                                                  });
-                                                },
-                                                items: places.map((String place) {
-                                                  return DropdownMenuItem<String>(
-                                                    value: place,
-                                                    child: Text(place),
-                                                  );
-                                                }).toList(),
+                                              DropdownMenuItem(
+                                                value: "0",
+                                                child: Text("Low")
                                               ),
-                                            ),
+                                            ],
                                           ),
-                                        ],
+                                        ),
                                       ),
-                                  ],
+                                
+                                      if (_selectedTask == "Loop")
+                                
+                                        Column(
+                                          children: [
+                                            SizedBox(
+                                              width: screenWidth * 0.5,
+                                              child: Padding(
+                                                padding: const EdgeInsets.all(8.0),
+                                                child: TextFormField(
+                                                  keyboardType: TextInputType.number,
+                                                  controller: _loopsController,
+                                                  cursorColor: colorsModel.coloreSecondario,
+                                                  textInputAction: TextInputAction.done,
+                                                  textAlign: TextAlign.start,
+                                                  textAlignVertical: TextAlignVertical.top,
+                                                  validator: (value) {
+                                                    if (value == null || value.isEmpty) {
+                                                      return "Inserire il numero di loop";
+                                                    }
+                                                    if (int.tryParse(value) == null || int.parse(value) < 0) {
+                                                      return "Inserire un valore positivo";
+                                                    }
+                                                    return null;
+                                                  },
+                                                  style: TextStyle(
+                                                    color: Colors.black,
+                                                    fontSize: 14,
+                                                    fontWeight: FontWeight.normal,
+                                                  ),
+                                                  decoration: InputDecoration(
+                                                    hintText: "Numero di loop",
+                                                    hintStyle: TextStyle(color: Colors.grey),
+                                                    border: OutlineInputBorder(
+                                                      borderRadius: BorderRadius.circular(15),
+                                                    ),
+                                                    focusedBorder: OutlineInputBorder(
+                                                      borderRadius: BorderRadius.circular(15),
+                                                      borderSide: BorderSide(color: colorsModel.coloreSecondario),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            
+                                            SizedBox(
+                                              width: screenWidth * 0.5,
+                                              child: Padding(
+                                                padding: const EdgeInsets.all(8.0),
+                                                child: DropdownButtonFormField<String>(
+                                                  validator: (value) {
+                                                    if (value == null) {
+                                                      return "Scegliere il punto di partenza";
+                                                    }
+                                                    return null;
+                                                  },
+                                                  value: _selectedStartingSpot,
+                                                  style: TextStyle(
+                                                    color: Colors.black,
+                                                    fontSize: 14,
+                                                    fontWeight: FontWeight.normal,
+                                                  ),
+                                                  decoration: InputDecoration(
+                                                    hintText: "Seleziona un punto di partenza",
+                                                    hintStyle: TextStyle(color: Colors.grey),
+                                                    border: OutlineInputBorder(
+                                                      borderRadius: BorderRadius.circular(15),
+                                                    ),
+                                                    focusedBorder: OutlineInputBorder(
+                                                      borderRadius: BorderRadius.circular(15),
+                                                      borderSide: BorderSide(color: colorsModel.coloreSecondario),
+                                                    ),
+                                                  ),
+                                                  onChanged: (String? newValue) {
+                                                    setState(() {
+                                                      _selectedStartingSpot = newValue;
+                                                    });
+                                                  },
+                                                  items: places.map((String place) {
+                                                    return DropdownMenuItem<String>(
+                                                      value: place,
+                                                      child: Text(place),
+                                                    );
+                                                  }).toList(),
+                                                ),
+                                              ),
+                                            ),
+                                            
+                                            SizedBox(
+                                              width: screenWidth * 0.5,
+                                              child: Padding(
+                                                padding: const EdgeInsets.all(8.0),
+                                                child: DropdownButtonFormField<String>(
+                                                  validator: (value) {
+                                                    if (value == null) {
+                                                      return "Scegliere il punto di arrivo";
+                                                    }
+                                                    return null;
+                                                  },
+                                                  value: _selectedEndingSpot,
+                                                  style: TextStyle(
+                                                    color: Colors.black,
+                                                    fontSize: 14,
+                                                    fontWeight: FontWeight.normal,
+                                                  ),
+                                                  decoration: InputDecoration(
+                                                    hintText: "Seleziona un punto di arrivo",
+                                                    hintStyle: TextStyle(color: Colors.grey),
+                                                    border: OutlineInputBorder(
+                                                      borderRadius: BorderRadius.circular(15),
+                                                    ),
+                                                    focusedBorder: OutlineInputBorder(
+                                                      borderRadius: BorderRadius.circular(15),
+                                                      borderSide: BorderSide(color: colorsModel.coloreSecondario),
+                                                    ),
+                                                  ),
+                                                  onChanged: (String? newValue) {
+                                                    setState(() {
+                                                      _selectedEndingSpot = newValue;
+                                                    });
+                                                  },
+                                                  items: places.map((String place) {
+                                                    return DropdownMenuItem<String>(
+                                                      value: place,
+                                                      child: Text(place),
+                                                    );
+                                                  }).toList(),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                    ],
+                                  ),
                                 ),
                               ),
 
