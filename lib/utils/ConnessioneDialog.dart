@@ -117,14 +117,6 @@ class _ConnessioneDialogState extends State<ConnessioneDialog> {
                               ),
                             ),
                             Spacer(),
-                            // Text(
-                            //   addressModel.ipAddress+"   ",
-                            //   style: GoogleFonts.encodeSans(
-                            //     color: colorsModel.textColor,
-                            //     fontSize: 20,
-                            //     fontWeight: FontWeight.w600,
-                            //   ),
-                            // ),
                             Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: Container(

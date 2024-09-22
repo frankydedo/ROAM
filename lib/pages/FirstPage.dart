@@ -402,27 +402,30 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
                     Stack(
                       children:[
 
-                        ElevatedButton(
-                          // onPressed: () async{
-                          //   String? tema = await showSelettoreTemaDialog(context);
-                          //   if(tema == null){
-                          //     return;
-                          //   }
-                          //   if (tema == "Sistema Operativo"){
-                          //     colorsModel.setTemaAttualeSistemaOperativo(context);
-                          //     setState(() {});
-                          //   }else{
-                          //     colorsModel.setTemaAttualeChiaroScuro(context, tema);
-                          //     setState(() {});
-                          //   }
-                          // },
-                          onPressed: (){
-                            Navigator.pushNamed(context, '/settingspage');
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: colorsModel.tileBackGroudColor
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(0,12,0,8),
+                          child: ElevatedButton(
+                            // onPressed: () async{
+                            //   String? tema = await showSelettoreTemaDialog(context);
+                            //   if(tema == null){
+                            //     return;
+                            //   }
+                            //   if (tema == "Sistema Operativo"){
+                            //     colorsModel.setTemaAttualeSistemaOperativo(context);
+                            //     setState(() {});
+                            //   }else{
+                            //     colorsModel.setTemaAttualeChiaroScuro(context, tema);
+                            //     setState(() {});
+                            //   }
+                            // },
+                            onPressed: (){
+                              Navigator.pushNamed(context, '/settingspage');
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: colorsModel.tileBackGroudColor
+                            ),
+                            child: Icon(CupertinoIcons.settings_solid, color: colorsModel.coloreSecondario, size: 30)
                           ),
-                          child: Icon(CupertinoIcons.settings_solid, color: colorsModel.coloreSecondario, size: 30)
                         ),
 
                         Positioned(

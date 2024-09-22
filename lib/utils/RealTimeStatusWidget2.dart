@@ -15,7 +15,7 @@ class RealTimeStatusWidget2 extends StatefulWidget {
 
 class _RealTimeStatusWidget2State extends State<RealTimeStatusWidget2> {
 
-  late bool _isConnected=false;
+  late bool _isConnected = true;
   Timer? _reconnectTimer;
 
     @override
@@ -50,6 +50,8 @@ class _RealTimeStatusWidget2State extends State<RealTimeStatusWidget2> {
 
       if (response.statusCode == 200) {
         setConnected();
+      }else{
+        resetConnected();
       }
     }catch (e){
       resetConnected();
@@ -62,27 +64,17 @@ class _RealTimeStatusWidget2State extends State<RealTimeStatusWidget2> {
 
       final addressProvider = Provider.of<AddressProvider>(context, listen: false);
 
-      // if(_isConnected){
         try{
           final response = await http.get(Uri.parse(addressProvider.apiServerAddress + '/dashboard_config'));
 
           if (response.statusCode == 200) {
             setConnected();
+          }else{
+            resetConnected();
           }
         }catch (e){
           resetConnected();
         }
-      // }else{
-      //   try{
-      //     final response = await http.get(Uri.parse(addressProvider.apiServerAddress + '/dashboard_config'));
-
-      //     if (response.statusCode == 200) {
-      //       setConnected();
-      //     }
-      //   }catch (e){
-      //     resetConnected();
-      //   }
-      // }
     });
   }
 
