@@ -15,12 +15,33 @@ class RealTimeStatusWidget extends StatefulWidget {
 
 class _RealTimeStatusWidgetState extends State<RealTimeStatusWidget> {
 
-  late bool _isConnected;
+  late bool _isConnected=false;
   Timer? _reconnectTimer;
 
   @override
-  void initState() async{
+  void initState(){
     super.initState();
+    initConnection();
+    startPolling();
+  }
+
+  void setConnected() {
+    if (mounted) {
+      setState(() {
+        _isConnected = true;
+      });
+    }
+  }
+
+  void resetConnected() {
+    if (mounted) {
+      setState(() {
+        _isConnected = false;
+      });
+    }
+  }
+
+  void initConnection()async{
     final addressProvider = Provider.of<AddressProvider>(context, listen: false);
 
     try{
@@ -32,20 +53,6 @@ class _RealTimeStatusWidgetState extends State<RealTimeStatusWidget> {
     }catch (e){
       resetConnected();
     }
-
-    startPolling();
-  }
-
-  void setConnected(){
-    setState(() {
-      _isConnected = true;
-    });
-  }
-
-  void resetConnected(){
-    setState(() {
-      _isConnected = false;
-    });
   }
 
   void startPolling() async {
@@ -54,7 +61,7 @@ class _RealTimeStatusWidgetState extends State<RealTimeStatusWidget> {
 
       final addressProvider = Provider.of<AddressProvider>(context, listen: false);
 
-      if(_isConnected){
+      // if(_isConnected){
         try{
           final response = await http.get(Uri.parse(addressProvider.apiServerAddress + '/dashboard_config'));
 
@@ -64,16 +71,17 @@ class _RealTimeStatusWidgetState extends State<RealTimeStatusWidget> {
         }catch (e){
           resetConnected();
         }
-      }else{
-        try{
-          final response = await http.get(Uri.parse(addressProvider.apiServerAddress + '/dashboard_config'));
+      // }else{
+      //   try{
+      //     final response = await http.get(Uri.parse(addressProvider.apiServerAddress + '/dashboard_config'));
 
-          if (response.statusCode == 200) {
-            setConnected();
-          }
-        }catch (e){
-        }
-      }
+      //     if (response.statusCode == 200) {
+      //       setConnected();
+      //     }
+      //   }catch (e){
+      //     resetConnected();
+      //   }
+      // }
     });
   }
 
