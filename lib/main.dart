@@ -6,10 +6,21 @@ import 'package:fleet_manager/providers/AddressProvider.dart';
 import 'package:fleet_manager/providers/ColorsProvider.dart';
 import 'package:fleet_manager/providers/ProjectProvider.dart';
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 
 
-void main() {
+Future<void> main() async {
+
+  WidgetsFlutterBinding.ensureInitialized();
+
+  final appDocsDir = await getApplicationDocumentsDirectory();
+  await Hive.initFlutter(appDocsDir.path);
+  await Hive.openBox('temaDB');
+  await Hive.openBox('addressDB');
+
   runApp(
     MultiProvider(
       providers: [
@@ -43,6 +54,11 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver{
       colorsProvider.initLightMode(context);
       print(colorsProvider.temaAttuale.toString());
     });
+  }
+
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
   }
 
   @override

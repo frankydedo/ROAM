@@ -180,7 +180,9 @@ class _ConnessioneDialogState extends State<ConnessioneDialog> {
                             CupertinoSwitch(
                               value: switchValue,
                               onChanged: (value) {
-                                switchValue = value;
+                                setState(() {
+                                  switchValue = value;
+                                });
                               },
                               activeColor: Colors.green,
                             ),

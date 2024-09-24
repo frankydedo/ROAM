@@ -1,14 +1,15 @@
 import 'dart:async';
 import 'dart:ui';
+import 'package:fleet_manager/data/TemaDB.dart';
 import 'package:flutter/material.dart'; 
 
 class ColorsProvider extends ChangeNotifier {
-  // ColorsProvider() {
-  //   _loadData();
-  // }
+
+  ColorsProvider() {
+    _loadData();
+  }
 
   final Completer<void> _initializationCompleter = Completer<void>();
-
   Future<void> get initializationDone => _initializationCompleter.future;
 
   bool isLightMode = true;
@@ -34,49 +35,45 @@ class ColorsProvider extends ChangeNotifier {
   Color get dialogBackgroudColor => isLightMode ? _colorePrimario : const Color.fromARGB(255, 36, 36, 36);
   Color get coloreHighlight => isLightMode ? _coloreHighlight : _coloreHighlight_dark;
 
-  // final ColoriDB _db = ColoriDB();
+  final TemaDB _db = TemaDB();
 
-  // Future<void> _loadData() async {
-  //   await _db.init();
+  Future<void> _loadData() async {
+    await _db.init();
 
-  //   if (_db.toInitialize) {
-  //     _db.createInitialDataColori();
-  //   }
+    if (_db.toInitialize) {
+      _db.createInitialDataColori();
+    }
 
-  //   _temaAttuale = _db.temaAttuale;
-  //   _coloreSecondario = _db.coloreSecondario;
-  //   _coloreSecondario_dark = _db.coloreSecondario_dark;
+    _temaAttuale = _db.temaAttuale;
 
-  //   _initializationCompleter.complete();  // Segnala che l'inizializzazione è completa
-  //   notifyListeners();
-  // }
+    _initializationCompleter.complete();  // Segnala che l'inizializzazione è completa
+    notifyListeners();
+  }
 
-  // Future<void> _saveData() async {
-  //   _db.coloreSecondario = _coloreSecondario;
-  //   _db.coloreSecondario_dark = _coloreSecondario_dark;
-  //   _db.temaAttuale = _temaAttuale;
-  //   await _db.updateDatabaseColori();
+  Future<void> _saveData() async {
+    _db.temaAttuale = _temaAttuale;
+    await _db.updateDatabaseTema();
 
-  //   notifyListeners();
-  // }
+    notifyListeners();
+  }
 
   void setTemaAttualeChiaroScuro(BuildContext context, String nuovoTema) {
     _temaAttuale = nuovoTema;
     isLightMode = _temaAttuale == "Chiaro";
-    // _saveData();
+    _saveData();
   }
 
   void setTemaAttualeSistemaOperativo(BuildContext context) {
     _temaAttuale = "Sistema Operativo";
     initLightMode(context);
-    // _saveData();
+    _saveData();
   }
 
   void initLightMode(BuildContext context) {
     if (_temaAttuale == "Sistema Operativo") {
       final brightness = MediaQuery.of(context).platformBrightness;
       isLightMode = brightness == Brightness.light;
-      // _saveData();
+      _saveData();
       notifyListeners();
     }else{
       setTemaAttualeChiaroScuro(context, _temaAttuale);
@@ -87,32 +84,9 @@ class ColorsProvider extends ChangeNotifier {
     if (_temaAttuale == "Sistema Operativo") {
       final brightness = MediaQuery.of(context).platformBrightness;
       isLightMode = brightness != Brightness.light;
-      // _saveData();
+      _saveData();
       notifyListeners();
     }
   }
 
-  void setViolaColoreSecondario() {
-    _coloreSecondario = Colors.purple.shade600;
-    _coloreSecondario_dark = Colors.purple.shade400;
-    // _saveData();
-  }
-
-  void setArancioneColoreSecondario() {
-    _coloreSecondario = Colors.orange.shade600;
-    _coloreSecondario_dark = Colors.orange.shade400;
-    // _saveData();
-  }
-
-  void setBluColoreSecondario() {
-    _coloreSecondario = Colors.indigo.shade800;
-    _coloreSecondario_dark = Colors.indigo.shade300;
-    // _saveData();
-  }
-
-  void setVerdeColoreSecondario() {
-    _coloreSecondario = Colors.green.shade800;
-    _coloreSecondario_dark = Colors.green.shade600;
-    // _saveData();
-  }
 }
