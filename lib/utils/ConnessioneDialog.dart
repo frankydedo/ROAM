@@ -58,7 +58,7 @@ class _ConnessioneDialogState extends State<ConnessioneDialog> {
             content: SingleChildScrollView(
               child: SizedBox(
                 width: screenWidth * 0.8,
-                height: screenHeight * 0.8,
+                height: screenHeight * 0.8 +10,
                 child: Column(
                   children: [
                     Icon(
@@ -215,6 +215,7 @@ class _ConnessioneDialogState extends State<ConnessioneDialog> {
                       ),
                     ),
                   ),
+                  SizedBox(height: 10)
                   ],
                 ),
               ),

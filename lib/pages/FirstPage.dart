@@ -429,7 +429,7 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
                         ),
 
                         Positioned(
-                          bottom: 16,
+                          bottom: 24,
                           left: 45,
                           child: RealTimeStatusWidget()
                         )
@@ -447,7 +447,8 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
                       millisecondsSinceStart != null ?
                       secToHoursMinsSecs((millisecondsSinceStart! / 1000).round())
                       :
-                      DateTime.now().hour.toString()+" : "+ DateTime.now().minute.toString()+" : "+ DateTime.now().second.toString(),
+                      "0 : 0 : 0",
+                      // DateTime.now().hour.toString()+" : "+ DateTime.now().minute.toString()+" : "+ DateTime.now().second.toString(),
                       style: GoogleFonts.encodeSans(
                           color: colorsModel.coloreTitoli,
                           fontSize: 20,
