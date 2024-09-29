@@ -109,7 +109,7 @@ class _ConnessioneDialogState extends State<ConnessioneDialog> {
                         child: Row(
                           children: [
                             Text(
-                              "IP locale del server",
+                              "IP privato del server",
                               style: GoogleFonts.encodeSans(
                                 color: colorsModel.textColor,
                                 fontSize: 20,
