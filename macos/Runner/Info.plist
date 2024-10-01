@@ -6,14 +6,17 @@
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
+
+	<!-- Modifica per puntare all'icona app_logo-1024.png -->
 	<key>CFBundleIconFile</key>
-	<string></string>
+	<string>app_logo-1024</string>
+
 	<key>CFBundleIdentifier</key>
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>$(PRODUCT_NAME)</string>
+	<string>R.O.A.M.</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -28,7 +31,7 @@
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
-	
+
 	<!-- Configurazione delle eccezioni per App Transport Security (ATS) -->
 	<key>NSAppTransportSecurity</key>
 	<dict>
