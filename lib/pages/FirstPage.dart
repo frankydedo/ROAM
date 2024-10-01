@@ -3,12 +3,12 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
-
-// import 'package:fleet_manager/api/WebSocketService.dart';
 import 'package:fleet_manager/models/Robot.dart';
 import 'package:fleet_manager/models/Task.dart';
+import 'package:fleet_manager/providers/AddressProvider.dart';
 import 'package:fleet_manager/providers/ColorsProvider.dart';
 import 'package:fleet_manager/providers/ProjectProvider.dart';
+import 'package:fleet_manager/utils/MyAlertDialog.dart';
 import 'package:fleet_manager/utils/MySnackBar.dart';
 import 'package:fleet_manager/utils/NewTaskDialog.dart';
 import 'package:fleet_manager/utils/RealTimeStatusWidget.dart';
@@ -36,8 +36,6 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
   late TabController _tabController;
   int _selectedTabIndex = 0;
   String? highlightedTaskRobotName;
-  final String apiServerAddress = "http://localhost:8083";
-  // final webSocketService = WebSocketService('ws://localhost:8000/_internal');
   int? millisecondsSinceStart = null;
   late List<String> validTask;
 
@@ -47,6 +45,8 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
   bool showQueued = true;
   bool showCanceled = true;
   bool showFailed = true;
+
+  bool alertCanBeShown = true;
 
   @override
   void initState() {
@@ -139,6 +139,13 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
     );
   }
 
+  Future showAlertDialog(BuildContext context) {
+    return showDialog(
+      context: context,
+      builder: (context) => MyAlertDialog(alert_msg: "Ristabilire la connessione."),
+    );
+  }
+
   Future showTaskFiltersDialog(BuildContext context) {
     return showDialog(
       context: context,
@@ -201,40 +208,41 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
   }
   
   Future<List<Robot>> getRobots() async {
+    final addressProvider = Provider.of<AddressProvider>(context, listen: false);
     try {
-      // final response = await http.get(Uri.parse('http://localhost:8000/robot'));
-      final response = await http.get(Uri.parse('$apiServerAddress/robot_list'));
+      final response = await http.get(Uri.parse(addressProvider.apiServerAddress + '/robot_list'));
       if (response.statusCode == 200) {
         return parseRobots(response.body);
       } else {
         throw Exception('Failed to load robots');
       }
     } catch (e) {
-      // print('Error: ${e.toString()}');
       return <Robot>[];
     }
   }
 
   Future<List<Task>> getTasks() async {
+    final addressProvider = Provider.of<AddressProvider>(context, listen: false);
     try {
-      final response = await http.get(Uri.parse('http://localhost:8000/tasks'));
+      final response = await http.get(Uri.parse(addressProvider.apiServerAddress_tasks + '/tasks'));
       if (response.statusCode == 200) {
         return parseTasks(response.body);
       } else {
         throw Exception('Failed to load tasks');
       }
     } catch (e) {
-      // print('Error: ${e.toString()}');
       return <Task>[];
     }
   }
 
 
   Future<String> getProjectName() async {
+    final addressProvider = Provider.of<AddressProvider>(context, listen: false);
     try {
-      final response = await http.get(Uri.parse('$apiServerAddress/dashboard_config'));
+      final response = await http.get(Uri.parse(addressProvider.apiServerAddress + '/dashboard_config'));
       
       if (response.statusCode == 200) {
+        alertCanBeShown = true;
         Map<String, dynamic> jsonMap = json.decode(response.body);
         validTask = List<String>.from(jsonMap['valid_task']);
         return jsonMap['world_name'] as String;
@@ -242,13 +250,20 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
         throw Exception('Failed to load dashboard config');
       }
     } catch (e) {
+      if (alertCanBeShown){
+        showAlertDialog(context);
+        setState(() {
+          alertCanBeShown = false;
+        });
+      }
       return "-";
     }
   }
 
 
   Future<dynamic> submitRequest(Map<String, dynamic> request) async {
-    final url = Uri.parse('$apiServerAddress/submit_task');
+    final addressProvider = Provider.of<AddressProvider>(context, listen: false);
+    final url = Uri.parse(addressProvider.apiServerAddress + '/submit_task');
 
     try {
       final response = await http.post(
@@ -351,8 +366,8 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
 
   @override
   Widget build(BuildContext context) {
-    return Consumer2<ColorsProvider, ProjectProvider>(
-      builder: (context, colorsModel, projectsModel, _) {
+    return Consumer3<ColorsProvider, ProjectProvider, AddressProvider>(
+      builder: (context, colorsModel, projectsModel, addressModel, _) {
 
         // Project currentProject = projectsModel.projects[_selectedTabIndex];
 
@@ -380,7 +395,47 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
                 Row(
                   children: [
 
-                    RealTimeStatusWidget(),
+                    // RealTimeStatusWidget(),
+
+                    // settings button
+
+                    Stack(
+                      children:[
+
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(0,12,0,8),
+                          child: ElevatedButton(
+                            // onPressed: () async{
+                            //   String? tema = await showSelettoreTemaDialog(context);
+                            //   if(tema == null){
+                            //     return;
+                            //   }
+                            //   if (tema == "Sistema Operativo"){
+                            //     colorsModel.setTemaAttualeSistemaOperativo(context);
+                            //     setState(() {});
+                            //   }else{
+                            //     colorsModel.setTemaAttualeChiaroScuro(context, tema);
+                            //     setState(() {});
+                            //   }
+                            // },
+                            onPressed: (){
+                              Navigator.pushNamed(context, '/settingspage');
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: colorsModel.tileBackGroudColor
+                            ),
+                            child: Icon(CupertinoIcons.settings_solid, color: colorsModel.coloreSecondario, size: 30)
+                          ),
+                        ),
+
+                        Positioned(
+                          bottom: 24,
+                          left: 45,
+                          child: RealTimeStatusWidget()
+                        )
+
+                      ]
+                    ),
 
                     SizedBox(width: 24),
 
@@ -392,11 +447,13 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
                       millisecondsSinceStart != null ?
                       secToHoursMinsSecs((millisecondsSinceStart! / 1000).round())
                       :
-                      DateTime.now().hour.toString()+" : "+ DateTime.now().minute.toString()+" : "+ DateTime.now().second.toString(),
+                      "0 : 0 : 0",
+                      // DateTime.now().hour.toString()+" : "+ DateTime.now().minute.toString()+" : "+ DateTime.now().second.toString(),
                       style: GoogleFonts.encodeSans(
                           color: colorsModel.coloreTitoli,
                           fontSize: 20,
-                          fontWeight: FontWeight.w600),
+                          fontWeight: FontWeight.w600
+                        ),
                     ),
 
                     Spacer(),
@@ -443,27 +500,27 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
                           )),
                     ),
 
-                    // tema button
+                    // settings button
 
-                    ElevatedButton(
-                      onPressed: () async{
-                        String? tema = await showSelettoreTemaDialog(context);
-                        if(tema == null){
-                          return;
-                        }
-                        if (tema == "Sistema Operativo"){
-                          colorsModel.setTemaAttualeSistemaOperativo(context);
-                          setState(() {});
-                        }else{
-                          colorsModel.setTemaAttualeChiaroScuro(context, tema);
-                          setState(() {});
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: colorsModel.tileBackGroudColor
-                      ),
-                      child: Icon(CupertinoIcons.settings_solid, color: colorsModel.coloreSecondario, size: 30)
-                    )
+                    // ElevatedButton(
+                    //   onPressed: () async{
+                    //     String? tema = await showSelettoreTemaDialog(context);
+                    //     if(tema == null){
+                    //       return;
+                    //     }
+                    //     if (tema == "Sistema Operativo"){
+                    //       colorsModel.setTemaAttualeSistemaOperativo(context);
+                    //       setState(() {});
+                    //     }else{
+                    //       colorsModel.setTemaAttualeChiaroScuro(context, tema);
+                    //       setState(() {});
+                    //     }
+                    //   },
+                    //   style: ElevatedButton.styleFrom(
+                    //     backgroundColor: colorsModel.tileBackGroudColor
+                    //   ),
+                    //   child: Icon(CupertinoIcons.settings_solid, color: colorsModel.coloreSecondario, size: 30)
+                    // )
                   ],
                 ),
               ],
