@@ -62,7 +62,6 @@ STEP 2: configurare il proxy
 
 sovrascrivere il contenuto con quanto segue:
 
-“””
     server {
         listen 8082;
         server_name myServer.ddns.org;  # Modificare a piacere
@@ -75,7 +74,6 @@ sovrascrivere il contenuto con quanto segue:
             proxy_set_header X-Forwarded-Proto $scheme;
         }
     }
-“””
 
 
 STEP 3: salvare e chiudere 
