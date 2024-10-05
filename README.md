@@ -95,6 +95,8 @@ E' possibile eseguire l'aplicazione anche su Windows e dispositivi Android, ma i
 Naturalmente è necessario clonare il progetto dalla repo git del sottoscritto al seguente link: 
 https://github.com/frankydedo/fleet_manager 
 
+Consiglio di importare sui dispositivi mobili la versione presente nel branch "main", mentre sugli altri dispositivi la versione presente nel branch "main_desktop".
+
 
 iOS e ipadOS
 
