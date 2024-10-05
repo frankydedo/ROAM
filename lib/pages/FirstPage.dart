@@ -429,7 +429,7 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
                         ),
 
                         Positioned(
-                          bottom: 24,
+                          bottom: 12,
                           left: 45,
                           child: RealTimeStatusWidget()
                         )
