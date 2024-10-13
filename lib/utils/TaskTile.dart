@@ -301,7 +301,7 @@ class _TaskTileState extends State<TaskTile> with SingleTickerProviderStateMixin
                                             body: jsonEncode({"type":"cancel_task_request","task_id": widget.task.id.toString()}),
                                           );
                                           if (response.statusCode == 200) {
-                                            MySnackBar(text: "Planning cancelled", isError: false).show(context);
+                                            MySnackBar(text: "Planning canceled", isError: false).show(context);
                                           } else {
                                             throw Exception('Failed to cancel task: '+response.statusCode.toString());
                                           }
