@@ -331,7 +331,6 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
         fleetName: jsonItem['assigned_to'] == null ? null :  jsonItem['assigned_to']['group'],
         state: jsonItem['status'],
         startTime: jsonItem['unix_millis_start_time'].toString(),
-        // startTime: millisecToHoursMinsSecs(jsonItem['unix_millis_start_time']).toString(),
         estimatedDuration: jsonItem['estimate_millis'] == null ? null : '${(jsonItem['estimate_millis']).toString()}',
         completionPerc: defineCompletionPerc(
           jsonItem['status'],
@@ -477,14 +476,14 @@ class _FirstPageState extends State<FirstPage> with SingleTickerProviderStateMix
                                   if (response['task_id'] != null && response['task_id'] != "") {
                                     MySnackBar(text: "Request submitted successfully!", isError: false).show(context);
                                   } else {
-                                    MySnackBar(text: "Delivery Request failed! ${response["error_msg"]}", isError: true).show(context);
+                                    MySnackBar(text: "Request failed! ${response["error_msg"]}", isError: true).show(context);
                                   }
                                 } else {
                                   MySnackBar(text: 'No response received from server', isError: true,).show(context);
                                 }
                               } catch (e) {
                                 print('An error occurred: $e');
-                                MySnackBar(text: "Delivery Request failed!", isError: true).show(context);
+                                MySnackBar(text: "Request failed!", isError: true).show(context);
                               }
                             }
                           },
