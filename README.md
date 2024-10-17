@@ -1,4 +1,5 @@
-README 
+![image](https://github.com/user-attachments/assets/3957e0ef-ba2a-4a39-ae36-5f622782c084)
+ 
 
 Nel seguente file saranno esplorati tutti i passaggi necessari affinchè l'app possa funzionare correttamente.
 
