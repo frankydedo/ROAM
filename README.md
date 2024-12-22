@@ -1,9 +1,14 @@
-![image](https://github.com/user-attachments/assets/3957e0ef-ba2a-4a39-ae36-5f622782c084)
- 
+ROAM is a flutter app that allows the end user to control heterogeneous fleets of robots via the OpenRMF framework (https://github.com/open-rmf).
+Further details are reported in my bachelor computer science thesis (ita): 
+https://drive.google.com/file/d/1HTLlG7jifR9McAD4WSe3CsWlcDmDF_Lb/view?usp=sharing.
 
-Nel seguente file saranno esplorati tutti i passaggi necessari affinchè l'app possa funzionare correttamente.
+![image](https://github.com/user-attachments/assets/3957e0ef-ba2a-4a39-ae36-5f622782c084) 
 
-                                                    
+[ITA] Nel seguente readme saranno esplorati tutti i passaggi necessari affinchè l'app possa funzionare correttamente.
+[ENG] In the following  readme we'll go through all the steps required to make the app work properly (currently those infos are only reported in italian). 
+
+<img width="1480" alt="image" src="https://github.com/user-attachments/assets/5ae5f762-556b-4914-828c-cb3a2b06223d" />
+
                                                     
                                                         CAP 1: Docker RMF
 
@@ -123,7 +128,7 @@ Recarsi alla directory "./build/macos/Build/Products/Release" e lanciare l'esegu
 
 Linux
 
-Assicurasi di avere Flutter installato.
+Assicurarsi di avere Flutter installato.
 
 Recarsi da terminale nella directory del progetto e eseguire il comando:
     flutter build linux
