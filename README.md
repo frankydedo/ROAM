@@ -10,7 +10,7 @@ https://drive.google.com/file/d/1HTLlG7jifR9McAD4WSe3CsWlcDmDF_Lb/view?usp=shari
 <img width="1480" alt="image" src="https://github.com/user-attachments/assets/5ae5f762-556b-4914-828c-cb3a2b06223d" />
 
                                                     
-                                                        CAP 1: Docker RMF
+# CAP 1: Docker RMF
 
 Il primo passaggio è quello di alzare i Container Docker necessari per la simulazione di Open RMF.
 Si noti che tali container dovranno necessariamente essere alzati in ambiente Linux. 
@@ -20,21 +20,21 @@ Aprire il terminale e lanciare in tre terminali diversi i seguenti comandi:
 
 CONTAINER DELLA SIMULAZIONE OPEN RMF:
 
-docker run --network=host \
--it ghcr.io/open-rmf/rmf_deployment_template/rmf-simulation:latest \
-bash -c "ros2 launch rmf_demos_gz office.launch.xml \
-headless:=1 \
-server_uri:=ws://localhost:8000/_internal"
+    docker run --network=host \
+    -it ghcr.io/open-rmf/rmf_deployment_template/rmf-simulation:latest \
+    bash -c "ros2 launch rmf_demos_gz office.launch.xml \
+    headless:=1 \
+    server_uri:=ws://localhost:8000/_internal"
 
 CONTAINER API SIMULAZIONE - GUI
-
-docker run --network=host \
--it ghcr.io/open-rmf/rmf_deployment_template/rmf-web-rmf-server:latest
+    
+    docker run --network=host \
+    -it ghcr.io/open-rmf/rmf_deployment_template/rmf-web-rmf-server:latest
 
 CONTAINER GUI: (opzionale per il funzionamento dell'interfaccia, ma necessario per la visualizzazione sulla mappa)
 
-docker run -p 3000:80 \
--it ghcr.io/open-rmf/rmf_deployment_template/rmf-web-dashboard-local:latest
+    docker run -p 3000:80 \
+    -it ghcr.io/open-rmf/rmf_deployment_template/rmf-web-dashboard-local:latest
 
 Una volta che tutti i container saranno stati avviati (il primo potrebbe richiedere qualche instante più degli altri, specialmente al primo avvio), recarsi tramite il seguente link (http://localhost:3000/dashboard) all'interfaccia messa a disposizione da Open RMF per la visualizzazione della mappa con i robot.
 
@@ -42,9 +42,9 @@ A differenza dell'interfaccia sviluppata dal sottoscritto, quella di cui sopra f
 
 
 
-                                                    CAP 2: REVERSE PROXY NGINX
+# CAP 2: REVERSE PROXY NGINX
 
-SPIEGAZIONE PRELIMINARE
+## SPIEGAZIONE PRELIMINARE
 
 La simulazione Open RMF è concepita per inviare e ricevere le informazioni tramite localhost esponendo degli endpoint sulle porte 8000 e 8083. Nello specifico il fetch delle task viene effettuato tramite la porta 8000 sull'endpoint "/tasks". Tale implementazione non reca alcun disturbo finchè l'interfaccia viene eseguita in localhost sul server stesso, ma non appena si prova ad accedere a tale porta da remoto tramite un dispositivo diverso dal server, la richiesta http restituisce un codice di errore.
 
@@ -52,17 +52,17 @@ La soluzione a questo problema è stata quella di implementare un Reverse Proxy 
 
 
 
-PROCEDURA DI CREAZIONE DEL REVERSE PROXY
+## PROCEDURA DI CREAZIONE DEL REVERSE PROXY
 
 Eseguire i seguenti passaggi sul server.
 
-STEP 1: installare nginx
+### STEP 1: installare nginx
 
     sudo apt update
     sudo apt install nginx
 
 
-STEP 2: configurare il proxy 
+### STEP 2: configurare il proxy 
 
     sudo nano /etc/nginx/sites-available/default
 
@@ -71,7 +71,7 @@ sovrascrivere il contenuto con quanto segue:
     server {
         listen 8082;
         server_name myServer.ddns.org;  # Modificare a piacere
-
+    
         location / {
             proxy_pass http://localhost:8000;  # Inoltra le richieste alla porta 8000
             proxy_set_header Host $host;
@@ -82,9 +82,9 @@ sovrascrivere il contenuto con quanto segue:
     }
 
 
-STEP 3: salvare e chiudere 
+### STEP 3: salvare e chiudere 
 
-STEP 4: riavviare nginx
+### STEP 4: riavviare nginx
 
     sudo systemctl restart nginx
 
@@ -93,18 +93,18 @@ STEP 4: riavviare nginx
 
 
 
-                                                    CAP 3: IMPORTARE L'INTERFACCIA
+# CAP 3: IMPORTARE L'INTERFACCIA
 
 Il modo più immediato per eseguire l'app è quello di runnarla in modalità debug tramite Visual Studio Code (o altro IDE), ma di seguito sono riportati i passaggi da seguire per importarla su dispositivi iOS, ipadOS, MacOS e Linux.
 E' possibile eseguire l'aplicazione anche su Windows e dispositivi Android, ma il dettaglio dell'importazione in questi casi non è riportanto nel presente file, anche se facilemnte reperibile in rete.
 
 Naturalmente è necessario clonare il progetto dalla repo git del sottoscritto al seguente link: 
-https://github.com/frankydedo/fleet_manager 
+    https://github.com/frankydedo/fleet_manager 
 
 Consiglio di importare sui dispositivi mobili la versione presente nel branch "main", mentre sugli altri dispositivi la versione presente nel branch "main_desktop".
 
 
-iOS e ipadOS
+## iOS e ipadOS
 
 Per importare l'app sui dispositivi mobile di Apple ci sono due modalità: quella definitiva (richiede un abbonamento al programma Apple Developer da $100/anno), oppure la modalità "Profile" (di seguito spiegata) che da diritto all'utilizzo dell'applicazione con una scadenza di 7 giorni, dopo i quali è comunque possibile eseguire nuovamente l'importazione e avere diritto ad ulteriori 7 giorni a oltranza. 
 
@@ -115,22 +115,24 @@ Prima di poterla eseguire ci si deve recare nelle impostazioni del dispositivo p
 
 
 
-MacOS
+## MacOS
 
 Assicurasi di avere Flutter installato.
 
 Recarsi da terminale nella directory del progetto e eseguire il comando:
+
     flutter build macos 
 
 Recarsi alla directory "./build/macos/Build/Products/Release" e lanciare l'eseguibile. 
 
 
 
-Linux
+## Linux
 
 Assicurarsi di avere Flutter installato.
 
 Recarsi da terminale nella directory del progetto e eseguire il comando:
+    
     flutter build linux
 
 Recarsi alla directory "./build/linux/release/bundle/" e lanciare l'eseguibile.
@@ -139,7 +141,7 @@ Recarsi alla directory "./build/linux/release/bundle/" e lanciare l'eseguibile.
 
 
 
-                                                    CAP 4: IMPOSTAZIONI INTERFACCIA
+# CAP 4: IMPOSTAZIONI INTERFACCIA
 
 L'interfaccia è dotata di una sezione dedicata alle impostazioni di rete. 
 Qui è possibile:
